@@ -248,7 +248,7 @@ void camera::reset(const int &preset = 0)
 		m_Look = {0.001f, 0.0f, 1.0f};
 	}
 	else {
-		m_Right = {1.0f, 0.0f, 0.0f};	
+		m_Right = {1.0f, 0.0f, 0.0f};
 		m_Up = {0.0f, 1.0f, 0.0f};
 		m_Look = {0.001f, -1.0f, 0.7f};
 	}

@@ -529,6 +529,19 @@ void instance_mgr<T_app>::update_frustum_culling()
 		}
 	}
 	m_BoundW.switch_box_alter(true, m_BoundL);
+	// shpere test
+	XMMATRIX p1world = XMLoadFloat4x4(m_Stat[m_App->m_Control.player1].get_World());
+	XMVECTOR p1pos = p1world.r[3];
+	BoundingSphere p1shpere;
+	XMStoreFloat3(&p1shpere.Center, p1pos);
+	p1shpere.Radius = 70.0f;
+	for (size_t ix = 0; ix != m_Stat.size(); ++ix) {
+		if (m_Stat[ix].get_IsInFrustum()) continue;
+		XMMATRIX obj_world = XMLoadFloat4x4(m_Stat[ix].get_World());
+		XMVECTOR ojb_pos = obj_world.r[3];
+		ContainmentType test = p1shpere.Contains(ojb_pos);
+		if (test != DISJOINT) m_Stat[ix].set_IsInFrustum(true);
+	}
 }
 //
 template <typename T_app>

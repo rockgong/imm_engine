@@ -69,6 +69,7 @@ struct instance_stat
 	bool is_alpha();
 	bool is_invoke_physics();
 	bool is_in_switch_clip();
+	bool get_IsInFrustum();
 };
 //
 instance_stat::instance_stat():
@@ -264,6 +265,17 @@ bool instance_stat::is_in_switch_clip()
 {
 	if (type != MODEL_SKINNED) return false;
 	if (((skinned_model_instance*)ptr)->time_switch > 0.0f) return true;
+	return false;
+}
+//
+bool instance_stat::get_IsInFrustum()
+{
+	switch(type) {
+	case MODEL_BASIC: return ((basic_model_instance*)ptr)->is_in_frustum;
+	case MODEL_SKINNED: return ((skinned_model_instance*)ptr)->is_in_frustum;
+	case MODEL_SIMPLE_P: return ((simple_model_instance<vertex::pntt>*)ptr)->is_in_frustum;
+	}
+	assert(false);
 	return false;
 }
 ////////////////

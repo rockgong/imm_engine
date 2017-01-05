@@ -322,6 +322,7 @@ void scene_mgr<T_app>::reload_stop_misc()
 	if (!csv_value_is_empty(get_misc["play_bgm"])) audio.play_bgm(get_misc["play_bgm"]);
 	is_loading_atmosphere = false;
 	app->m_Cam.reset(std::stoi(get_misc["camera_preset"]));
+	app->m_Control.cam.rebuild_setting();
 	plasma.remove_all();
 }
 //

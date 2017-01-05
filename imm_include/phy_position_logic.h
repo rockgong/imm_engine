@@ -319,6 +319,7 @@ void phy_position<T_app>::impulse_casual(
 	// !(relative_size < 1.0f)
 	else {
 		float penetration = XMVectorGetX(XMVector3LengthEst(XMVectorSubtract(vel_A_all, vel_B_all)))*(dt/FPS60_1DIV);
+		penetration *= 2.0f;
 		AtoB = XMVectorScale(AtoB, 20.0f+penetration);
 	}
 	// store result

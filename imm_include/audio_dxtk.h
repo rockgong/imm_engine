@@ -43,6 +43,7 @@ struct audio_dxtk
 	void play_bgm_update();
 	void stop_bgm();
 	void play_effect(const std::string &name);
+	void play_effect_interval(const std::string &name, const float &now_time);
 	void set_effect_inst_volume(float volume);
 	void set_wave_bank_volume(float volume);
 	void suspend(const bool &is_stop);
@@ -53,6 +54,7 @@ struct audio_dxtk
 	std::map<std::string, std::unique_ptr<WaveBank>> map_wave_bank;
 	std::map<std::string, std::unique_ptr<SoundEffect>> map_sound_effect;
 	std::map<std::string, std::unique_ptr<SoundEffectInstance>> map_effect_inst;
+	std::map<std::string, float> last_play_time;
 	std::unique_ptr<AudioEngine> aud_engine;
 	audio_play_bgm bgm_task;
 };
@@ -135,6 +137,13 @@ void audio_dxtk::play_effect(const std::string &name)
 	if (name == sfx::Empty) return;
 	assert(map_effect_bank.count(name));
 	map_wave_bank[map_effect_bank[name]]->Play(map_effect_ix[name], wave_bank_volume, 0.0f, 0.0f);
+}
+//
+void audio_dxtk::play_effect_interval(const std::string &name, const float &now_time)
+{
+	float interval = now_time - last_play_time["name"];
+	if (abs(interval) > 0.1f) play_effect(name);
+	last_play_time["name"] = now_time;
 }
 //
 void audio_dxtk::set_effect_inst_volume(float volume)

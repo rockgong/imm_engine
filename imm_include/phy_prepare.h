@@ -121,7 +121,11 @@ void phy_set_sphere(
 		v_max = XMVectorMax(v_max, P);
 	}
 	XMStoreFloat3(&sphere.Center, XMVectorScale(XMVectorAdd(v_min, v_max), 0.5f));
-	XMStoreFloat3(&sphere.Radius, XMVectorScale(XMVectorSubtract(v_max, v_min), 0.5f));
+	XMVECTOR extents = XMVectorScale(XMVectorSubtract(v_max, v_min), 0.5f);
+	float largest = XMVectorGetX(extents);
+	if (XMVectorGetY(extents) > largest) largest = XMVectorGetY(extents);
+	if (XMVectorGetZ(extents) > largest) largest = XMVectorGetZ(extents);
+	sphere.Radius = largest;
 	return;
 }
 ////////////////

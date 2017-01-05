@@ -36,7 +36,8 @@ struct control_cam
 	void mouse_move();
 	void follow_update();
 	void follow_update_reset(const XMVECTOR &rot_quat);
-	bool is_restrict_pitch();
+	bool is_restrict();
+	void rebuild_setting();
 	T_app *app;
 	bool is_pad_follow_reset;
 	bool is_smooth;
@@ -69,7 +70,7 @@ control_cam<T_app>::control_cam():
 	follow_walk_max(-10.0f),
 	follow_reset_timer(0.0f),
 	follow_reset_cd_max(5.0f),
-	restrict_pitch_range(0.2f),
+	restrict_pitch_range(0.0f),
 	restrict_pitch_value(0.0f),
 	reset_R(0.0f, 0.0f, 0.0f),
 	reset_U(0.0f, 0.0f, 0.0f),
@@ -96,6 +97,7 @@ template <typename T_app>
 void control_cam<T_app>::pad_update(const float &dt)
 {
 	if (app->m_Control.pad.is_R_active() && !is_resetting) {
+		if (is_restrict()) return;
 		float dx = XMConvertToRadians(50.0f*app->m_Control.pad.state.Gamepad.sThumbRX/32767*dt);
 		float dy = XMConvertToRadians(50.0f*app->m_Control.pad.state.Gamepad.sThumbRY/32767*dt);
 		app->m_Cam.pitch(dy);
@@ -160,9 +162,10 @@ void control_cam<T_app>::mouse_move()
 	// Make each pixel correspond to a quarter of a degree.
 	float dx = XMConvertToRadians(0.25f*static_cast<float>(app->m_Control.mouse_move.x - app->m_LastMousePos.x));
 	float dy = XMConvertToRadians(0.25f*static_cast<float>(app->m_Control.mouse_move.y - app->m_LastMousePos.y));
-	if (is_restrict_pitch()) {
-		if (abs(restrict_pitch_value+dy) > restrict_pitch_range) dy = 0;
+	if (is_restrict()) {
+		if (abs(restrict_pitch_value+dy) > restrict_pitch_range) dy = 0.0f;
 		restrict_pitch_value += dy;
+		dx = 0.0f;
 	}
 	app->m_Cam.pitch(dy);
 	app->m_Cam.rotate_y(dx);
@@ -196,7 +199,7 @@ void control_cam<T_app>::follow_update()
 	}
 	XMStoreFloat3(&app->m_Cam.m_Position, pos);
 	// reset
-	if (is_restrict_pitch()) return;
+	if (is_restrict()) return;
 	if (follow_reset_timer > -1.0f) {
 		follow_reset_timer -= app->m_Timer.delta_time();
 	}
@@ -274,10 +277,21 @@ void control_cam<T_app>::follow_update_reset(const XMVECTOR &rot_quat)
 }
 //
 template <typename T_app>
-bool control_cam<T_app>::is_restrict_pitch()
+bool control_cam<T_app>::is_restrict()
 {
 	if (app->m_Cam.m_Preset != 0) return true;
 	return false;
+}
+//
+template <typename T_app>
+void control_cam<T_app>::rebuild_setting()
+{
+	if (is_restrict()) follow_walk = follow_walk_min;
+	else follow_walk = follow_walk_def;
+	
+	
+	
+	
 }
 //
 }

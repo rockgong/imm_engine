@@ -22,9 +22,9 @@ Disadvantage List:
 * The disavantage list is the bad features that will not change even in the future.
 * [cl.exe](https://msdn.microsoft.com/en-us/library/9s7c9wdw.aspx) Command-Line Build.
 * No visualization scene editor.
-* The platform only supports Microsoft Windows. 
-* Just as the name implies, the engine technology is not advanced.
+* The platform only supports Microsoft Windows.
 * Little document support.
+* Single core optimization.
 
 Compile Environment:
 --------------------

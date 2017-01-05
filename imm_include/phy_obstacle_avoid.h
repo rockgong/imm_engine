@@ -2,7 +2,7 @@
 // phy_obstacle_avoid.h
 // This file is a portion of the immature engine.
 // It is distributed under the BSD license.
-// Copyright 2015-2016 Huang Yiting (http://endrollex.com)
+// Copyright 2015-2017 Huang Yiting (http://endrollex.com)
 // method:
 // http://gamedevelopment.tutsplus.com/tutorials/understanding-steering-behaviors-collision-avoidance--gamedev-7777
 ////////////////

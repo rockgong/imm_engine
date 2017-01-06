@@ -38,12 +38,14 @@ struct control_cam
 	void follow_update_reset(const XMVECTOR &rot_quat);
 	bool is_restrict();
 	void rebuild_setting();
+	float follow_up_def_value();
 	T_app *app;
 	bool is_pad_follow_reset;
 	bool is_smooth;
 	bool is_resetting;
 	float follow_walk_def;
-	float follow_up_def;
+	float follow_up_def1;
+	float follow_up_def2;
 	float follow_walk;
 	float follow_walk_min;
 	float follow_walk_max;
@@ -65,7 +67,8 @@ control_cam<T_app>::control_cam():
 	is_smooth(true),
 	is_resetting(false),
 	follow_walk_def(-30.0f),
-	follow_up_def(3.0f),
+	follow_up_def1(3.0f),
+	follow_up_def2(0.0f),
 	follow_walk_min(-40.0f),
 	follow_walk_max(-10.0f),
 	follow_reset_timer(0.0f),
@@ -77,7 +80,7 @@ control_cam<T_app>::control_cam():
 	reset_L(0.0f, 0.0f, 0.0f)
 {
 	follow_walk = follow_walk_def;
-	follow_up = follow_up_def;
+	follow_up = follow_up_def1;
 }
 //
 template <typename T_app>
@@ -121,7 +124,7 @@ void control_cam<T_app>::pad_update(const float &dt)
 		if (w_buttons & XGPAD_CAM_FOLLOW_FORWARD) follow_walk += 10.0f*dt;
 		if (w_buttons & XGPAD_CAM_FOLLOW_BACKWARD) follow_walk += -10.0f*dt;
 		follow_walk = math::calc_clamp(follow_walk, follow_walk_min, follow_walk_max);
-		follow_up = follow_walk * (follow_up_def/follow_walk_def);
+		follow_up = follow_walk * (follow_up_def_value()/follow_walk_def);
 	}
 }
 //
@@ -151,7 +154,7 @@ void control_cam<T_app>::mouse_wheel(const short &z_delta)
 	else {
 		follow_walk += z_delta/120*1.0f;
 		follow_walk = math::calc_clamp(follow_walk, follow_walk_min, follow_walk_max);
-		follow_up = follow_walk * (follow_up_def/follow_walk_def);
+		follow_up = follow_walk * (follow_up_def_value()/follow_walk_def);
 	}
 }
 //
@@ -286,12 +289,21 @@ bool control_cam<T_app>::is_restrict()
 template <typename T_app>
 void control_cam<T_app>::rebuild_setting()
 {
-	if (is_restrict()) follow_walk = follow_walk_min;
-	else follow_walk = follow_walk_def;
-	
-	
-	
-	
+	if (is_restrict()) {
+		follow_walk = follow_walk_min;
+		follow_up = follow_up_def2;
+	}
+	else {
+		follow_walk = follow_walk_def;
+		follow_up = follow_up_def2;
+	}
+}
+//
+template <typename T_app>
+float control_cam<T_app>::follow_up_def_value()
+{
+	if (is_restrict()) return follow_up_def2;
+	else return follow_up_def1;
 }
 //
 }

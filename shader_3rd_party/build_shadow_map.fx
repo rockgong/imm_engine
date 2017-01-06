@@ -250,6 +250,8 @@ technique11 BuildShadowMapAlphaClipTech
 		SetVertexShader(CompileShader(vs_5_0, VS()));
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_5_0, PS()));
+		//
+		SetRasterizerState(Depth);
 	}
 }
 technique11 BuildShadowMapSkinnedTech
@@ -267,6 +269,8 @@ technique11 BuildShadowMapAlphaClipSkinnedTech
 		SetVertexShader(CompileShader(vs_5_0, SkinnedVS()));
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_5_0, PS()));
+		//
+		SetRasterizerState(Depth);
 	}
 }
 technique11 TessBuildShadowMapTech
@@ -288,5 +292,7 @@ technique11 TessBuildShadowMapAlphaClipTech
 		SetDomainShader(CompileShader(ds_5_0, DS()));
 		SetGeometryShader(NULL);
 		SetPixelShader(CompileShader(ps_5_0, TessPS()));
+		//
+		SetRasterizerState(Depth);
 	}
 }

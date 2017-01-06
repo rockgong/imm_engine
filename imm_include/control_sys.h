@@ -234,7 +234,6 @@ void control_sys<T_app>::update_stop(const float &dt)
 template <typename T_app>
 void control_sys<T_app>::update_keydown_and_pad(const float &dt)
 {
-	
 	if (app->m_Cmd.is_active) return;
 	// player1 and camera update, if !m_Cmd.is_active()
 	if (pad.is_enable()) {

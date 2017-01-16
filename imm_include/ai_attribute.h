@@ -188,6 +188,7 @@ struct ai_attr
 	void calc_skill_magic_delay(const SKILL_SPECIFY &specify, const size_t &ix_atk, const size_t &ix_dmg);
 	void calc_skill_melee_delay(const SKILL_SPECIFY &specify, const size_t &ix_atk, const size_t &ix_dmg);
 	bool is_required_ap(const SKILL_SPECIFY &specify, const size_t &ix);
+	void should_be_destroyed(const size_t &ix);
 	T_app *app;
 	float delta_time;
 	ui_attr<T_app> ui;
@@ -285,8 +286,8 @@ void ai_attr<T_app>::calc_skill_melee_immediately(const SKILL_SPECIFY &specify, 
 	specify;
 	ix_atk;
 	app->m_Inst.m_Troll[ix_dmg].order |= ORDER_DMG;
-	if (app->m_Control.atk.current_impulse(ix_atk) > ATK_IMPULSE_PHASE) {
-		app->m_Inst.m_Troll[ix_dmg].order |= ORDER_HITFLY;
+	if (app->m_Control.atk.current_impulse(ix_atk) > ATK_IMPULSE_DMG2) {
+		app->m_Inst.m_Troll[ix_dmg].order |= ORDER_DMG2;
 	}
 }
 //
@@ -298,7 +299,10 @@ void ai_attr<T_app>::calc_skill_magic_delay(const SKILL_SPECIFY &specify, const 
 	switch (specify) {
 	case SKILL_MAGIC_LIGHTNING:
 		points[ix_dmg].hp -= 3.0f;
-		if (points[ix_dmg].hp < 0.0f) points[ix_dmg].hp = points[ix_dmg].hp_max;
+		if (points[ix_dmg].hp < 0.0f) {
+			points[ix_dmg].hp = points[ix_dmg].hp_max;
+			should_be_destroyed(ix_dmg);
+		}
 		break;
 	}
 }
@@ -310,7 +314,10 @@ void ai_attr<T_app>::calc_skill_melee_delay(const SKILL_SPECIFY &specify, const 
 	switch (specify) {
 	case SKILL_MELEE_STANDARD:
 		points[ix_dmg].hp -= 3.0f;
-		if (points[ix_dmg].hp < 0.0f) points[ix_dmg].hp = points[ix_dmg].hp_max;
+		if (points[ix_dmg].hp < 0.0f) {
+			points[ix_dmg].hp = points[ix_dmg].hp_max;
+			should_be_destroyed(ix_dmg);
+		}
 		break;
 	}
 }
@@ -332,6 +339,13 @@ bool ai_attr<T_app>::is_required_ap(const SKILL_SPECIFY &specify, const size_t &
 		return true;
 		break;
 	}
+}
+//
+template <typename T_app>
+void ai_attr<T_app>::should_be_destroyed(const size_t &ix)
+{
+	app->m_Inst.m_Troll[ix].order |= ORDER_DMG;
+	app->m_Inst.m_Troll[ix].order |= ORDER_DMG_DOWN;
 }
 //
 }

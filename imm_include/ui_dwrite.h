@@ -9,7 +9,7 @@
 #define UI_DWRITE_H
 #include <d2d1_1.h>
 #include <Dwrite.h>
-#include "imm_core.h"
+#include "imm_basic_util.h"
 ////////////////
 // DWRITE_ALIG_STYLE
 ////////////////

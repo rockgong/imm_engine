@@ -7,15 +7,17 @@
 ////////////////
 #ifndef STRU_SCENE_SWATCH_H
 #define STRU_SCENE_SWATCH_H
-#include "imm_core.h"
+#include "imm_basic_util.h"
+#include "stru_lua_help.h"
+#include "mesh_texture_mgr.h"
 namespace imm
 {
 ////////////////
-// model_material_common
+// model_material_swatch
 // common 3D materials parameters
 ////////////////
 ////////////////
-void model_material_common(material &mat, const float &mat_refraction, const int &mat_property)
+void model_material_swatch(material &mat, const float &mat_refraction, const int &mat_property)
 {
 	// http://www.nicoptere.net/dump/materials.html
 	mat.reflect = XMFLOAT4(mat_refraction, mat_refraction, mat_refraction, 1.0f);
@@ -164,5 +166,64 @@ void scene_dir_lights_common(light_dir dir_lights[]){
 	dir_lights[2].specular  = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	dir_lights[2].direction = XMFLOAT3(0.0f, 0.0, -1.0f);
 }
+////////////////
+// SWATCH_TEXTURE
+////////////////
+////////////////
+enum SWATCH_TEXTURE
+{
+	SWATCH_GRID,
+};
+////////////////
+// extra_texture
+////////////////
+////////////////
+template <typename T_app>
+struct extra_texture
+{
+	extra_texture();
+	void init_load(T_app *app_in);
+	SWATCH_TEXTURE swatch_map(const std::string &name_in);
+	T_app *app;
+	texture_mgr manager;
+	std::map<SWATCH_TEXTURE, ID3D11ShaderResourceView*> texture;
+};
+//
+template <typename T_app>
+extra_texture<T_app>::extra_texture():
+	app(nullptr),
+	manager(),
+	texture()
+{
+	
+	;
+}
+//
+template <typename T_app>
+void extra_texture<T_app>::init_load(T_app *app_in)
+{
+	app = app_in;
+	manager.init(app->m_D3DDevice);
+	lua_reader l_reader;
+	std::string concrete = IMM_PATH["script"]+"concrete_common.lua";
+	std::vector<std::vector<std::string>> vec2d;
+	l_reader.loadfile(concrete);
+	l_reader.vec2d_str_from_table("csv_ex_texutre", vec2d);	
+	for (size_t ix = 1; ix < vec2d.size(); ++ix) {
+		std::string name = vec2d[ix][0];
+		std::wstring file = str_to_wstr(vec2d[ix][1]);
+		std::wstring subpath = str_to_wstr(IMM_PATH["texture"])+str_to_wstr(vec2d[ix][2]);
+		ID3D11ShaderResourceView *diffuse_map_srv = manager.create_texture(subpath + file);
+		texture[swatch_map(name)] = diffuse_map_srv;
+	}
+}
+//
+template <typename T_app>
+SWATCH_TEXTURE extra_texture<T_app>::swatch_map(const std::string &name_in)
+{
+	if (name_in == "GRID") return SWATCH_GRID;
+	return SWATCH_GRID;
+}
+//
 }
 #endif

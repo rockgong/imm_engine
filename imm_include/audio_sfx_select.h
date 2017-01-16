@@ -39,8 +39,15 @@ void sfx_select<T_app>::init(T_app *app_in)
 template <typename T_app>
 void sfx_select<T_app>::play_effect(const SKILL_SPECIFY &skill, const size_t &ix1, const size_t &ix2, const XMFLOAT3 &center)
 {
-	skill;
 	ix1;
+	switch(skill) {
+	case SKILL_SYSTEM_ELIMINATE:
+		app->m_Scene.plasma.push_back(PLASMA_BROKEN, 2.5f, center);
+		app->m_Scene.audio.play_effect(sfx::Lightning);
+		return;
+		break;
+	}
+	//
 	if (app->m_Inst.m_Troll[ix2].order_stat & ORDER_IS_GUARD) {
 		app->m_Scene.plasma.push_back(PLASMA_STRIKE2, 0.5f, center);
 		app->m_Scene.audio.play_effect(sfx::PunchLight);

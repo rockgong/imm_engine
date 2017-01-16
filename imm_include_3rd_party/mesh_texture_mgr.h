@@ -5,7 +5,7 @@
 ////////////////
 #ifndef MESH_TEXTURE_MGR_H
 #define MESH_TEXTURE_MGR_H
-#include "imm_core.h"
+#include "imm_basic_util.h"
 #include "DDSTextureLoader.h"
 namespace imm
 {

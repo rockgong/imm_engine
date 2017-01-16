@@ -270,7 +270,7 @@ void control_atk<T_app>::init(T_app *app_in)
 	lua_reader l_reader;
 	l_reader.loadfile(concrete);
 	std::vector<std::vector<std::string>> vec2d;
-	l_reader.vec2d_str_from_table("csv_skill", vec2d);
+	l_reader.vec2d_str_from_table("csv_npc_skill", vec2d);
 	for (size_t ix = 1; ix < vec2d.size(); ++ix) {
 		auto d_skill = &data_ski[vec2d[ix][0]];
 		if (!d_skill->chunk.count(vec2d[ix][1][0])) {

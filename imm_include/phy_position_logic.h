@@ -371,12 +371,13 @@ void phy_position<T_app>::attack_impulse(
 	XMVECTOR vel_absolute = XMLoadFloat3(&prop_B.vel_absolute);
 	// think aimlessly
 	float impulse = 3.0f;
-	if (impulse_scale < 3.0f) impulse = impulse_scale;
+	float impulse_step = 3.0f;
+	if (impulse_scale < impulse_step) impulse = impulse_scale;
 	Hit_to_B = XMVectorScale(Hit_to_B, 20.0f * impulse);
 	vel_absolute = XMVectorAdd(vel_absolute, Hit_to_B);
 	XMStoreFloat3(&prop_B.vel_absolute, vel_absolute);
-	if (impulse_scale > ATK_IMPULSE_PHASE) {
-		float f_time = impulse_scale - 3.0f;
+	if (impulse_scale > impulse_step) {
+		float f_time = impulse_scale - impulse_step;
 		prop_B.absolute_alt = f_time*FRAME_RATE_1DIV;
 	}
 	return;

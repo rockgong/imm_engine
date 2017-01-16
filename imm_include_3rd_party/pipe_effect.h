@@ -7,7 +7,7 @@
 ////////////////
 #ifndef PIPE_EFFECT_H
 #define PIPE_EFFECT_H
-#include "imm_core.h"
+#include "imm_basic_util.h"
 #include "pipe_effect2.h"
 namespace imm
 {
@@ -231,6 +231,7 @@ public:
 	static particle_effect         *m_PtGuardFX;
 	static particle_effect         *m_PtChargeFX;
 	static particle_effect         *m_PtLightningFX;
+	static particle_effect         *m_PtBrokenFX;
 };
 basic_effect            *effects::m_BasicFX          = nullptr;
 normal_map_effect       *effects::m_NormalMapFX      = nullptr;
@@ -247,6 +248,7 @@ particle_effect         *effects::m_PtStrikeFX       = nullptr;
 particle_effect         *effects::m_PtGuardFX        = nullptr;
 particle_effect         *effects::m_PtChargeFX       = nullptr;
 particle_effect         *effects::m_PtLightningFX    = nullptr;
+particle_effect         *effects::m_PtBrokenFX       = nullptr;
 void effects::destroy_all()
 {
 	SAFE_DELETE(m_BasicFX);
@@ -264,6 +266,7 @@ void effects::destroy_all()
 	SAFE_DELETE(m_PtGuardFX);
 	SAFE_DELETE(m_PtChargeFX);
 	SAFE_DELETE(m_PtLightningFX);
+	SAFE_DELETE(m_PtBrokenFX);
 }
 //
 void effects::init_all(ID3D11Device *device)
@@ -284,6 +287,7 @@ void effects::init_all(ID3D11Device *device)
 	m_PtGuardFX        = new particle_effect(device, path+L"pt_guard.fxo");
 	m_PtChargeFX       = new particle_effect(device, path+L"pt_charge.fxo");
 	m_PtLightningFX    = new particle_effect(device, path+L"pt_lightning.fxo");
+	m_PtBrokenFX       = new particle_effect(device, path+L"pt_broken.fxo");
 }
 }
 #endif

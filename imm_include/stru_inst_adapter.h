@@ -197,6 +197,8 @@ void inst_adapter<T_app>::update_attach()
 {
 	for (auto &att: attach) {
 		if (!att.is_enable) continue;
+		if (app->m_Inst.m_Stat[att.ix].get_IsOffline()) continue;
+		app->m_Inst.m_Stat[att.ix].set_IsOffline(app->m_Inst.m_Stat[att.owner_ix].get_IsOffline());
 		XMMATRIX world = XMLoadFloat4x4(app->m_Inst.m_Stat[att.owner_ix].get_World());
 		XMMATRIX to_bone = XMLoadFloat4x4(&att.to_bone);
 		XMMATRIX trans_bone = XMLoadFloat4x4(

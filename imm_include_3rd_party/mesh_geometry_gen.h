@@ -14,7 +14,7 @@
 ////////////////
 #ifndef MESH_GEOMETRY_GEN_H
 #define MESH_GEOMETRY_GEN_H
-#include "imm_core.h"
+#include "imm_basic_util.h"
 ////////////////
 // geometry
 ////////////////

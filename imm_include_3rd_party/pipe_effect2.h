@@ -7,7 +7,7 @@
 ////////////////
 #ifndef PIPE_EFFECT2_H
 #define PIPE_EFFECT2_H
-#include "imm_core.h"
+#include "imm_basic_util.h"
 namespace imm
 {
 ////////////////

@@ -5,7 +5,7 @@
 ////////////////
 #ifndef MESH_GEOMETRY_H
 #define MESH_GEOMETRY_H
-#include "imm_core.h"
+#include "imm_basic_util.h"
 namespace imm
 {
 ////////////////

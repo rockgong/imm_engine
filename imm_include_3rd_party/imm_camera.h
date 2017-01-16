@@ -10,7 +10,7 @@
 ////////////////
 #ifndef IMM_CAMERA_H
 #define IMM_CAMERA_H
-#include "imm_core.h"
+#include "imm_basic_util.h"
 namespace imm
 {
 ////////////////

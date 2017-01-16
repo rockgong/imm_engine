@@ -70,6 +70,7 @@ struct instance_stat
 	bool is_invoke_physics();
 	bool is_in_switch_clip();
 	bool get_IsInFrustum();
+	bool get_IsOffline();
 };
 //
 instance_stat::instance_stat():
@@ -278,6 +279,17 @@ bool instance_stat::get_IsInFrustum()
 	assert(false);
 	return false;
 }
+//
+bool instance_stat::get_IsOffline()
+{
+	switch(type) {
+	case MODEL_BASIC: return ((basic_model_instance*)ptr)->is_offline;
+	case MODEL_SKINNED: return ((skinned_model_instance*)ptr)->is_offline;
+	case MODEL_SIMPLE_P: return ((simple_model_instance<vertex::pntt>*)ptr)->is_offline;
+	}
+	assert(false);
+	return false;
+}
 ////////////////
 // model_mgr
 ////////////////
@@ -382,7 +394,7 @@ void model_mgr::pntt_init(ID3D11Device *device, lua_reader &l_reader)
 		//
 		m_PNTT["default"].m_Mat.push_back(material());
 		para = csv_string_to_float(vec2d_model[ix][4], 2);
-		model_material_common(
+		model_material_swatch(
 			m_PNTT["default"].m_Mat.back(), para[0], static_cast<int>(para[1]));
 		model_rot_front[model_name] = rotation_xyz(vec2d_model[ix][3]);
 		std::wstring tex_subpath = str_to_wstr(vec2d_model[ix][5]);

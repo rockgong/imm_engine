@@ -1,5 +1,5 @@
 ////////////////
-// imm_core.h
+// imm_basic_util.h
 // miscellaneous basic utilities
 // from 3D Game Programming with DirectX 11 by Frank Luna:
 // GameTimer.h
@@ -14,8 +14,8 @@
 // by Frank Luna (C) 2011 All Rights Reserved.
 ////////////////
 ////////////////
-#ifndef IMM_CORE_H
-#define IMM_CORE_H
+#ifndef IMM_BASIC_UTIL_H
+#define IMM_BASIC_UTIL_H
 #include <cassert>
 #include <windows.h>
 #include <cfloat>
@@ -87,7 +87,7 @@ static const float GAME_HP_BAR = 20.0f;
 static const float AI_DELTA_TIME_LOGIC = 0.05;
 static const float AI_DELTA_TIME_PHY_FAST = 0.05f;
 static const float AI_DELTA_TIME_PHY_SLOW = 0.1f;
-static const float ATK_IMPULSE_PHASE = 5.0f;
+static const float ATK_IMPULSE_DMG2 = 5.0f;
 static const std::wstring SCENE_FIRST = L"_00";
 static const std::wstring SCENE_SECOND = L"_01";
 ////////////////

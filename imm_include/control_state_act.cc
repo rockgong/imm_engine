@@ -48,10 +48,16 @@ std::string act_str::Damage()
 	if (*p_order_s & ORDER_IS_GUARD) return "GuardDamage";
 	return "Damage";
 }
-std::string act_str::DamageFly()
+//
+std::string act_str::Damage2()
 {
 	if (*p_order_s & ORDER_IS_GUARD) return "GuardDamage";
-	return "DamageFly";
+	return "Damage2";
+}
+//
+std::string act_str::DownCollapse()
+{
+	return "DownCollapse";
 }
 //
 std::string act_str::Roll()
@@ -69,9 +75,9 @@ std::string act_str::Guard()
 	return "Guard";
 }
 //
-std::string act_str::LieDown()
+std::string act_str::DownKeep()
 {
-	return "LieDown";
+	return "DownKeep";
 }
 //
 std::string act_str::GetUp()

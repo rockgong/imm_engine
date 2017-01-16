@@ -52,7 +52,7 @@ void status_data::build_ability()
 	lua_reader l_reader;
 	l_reader.loadfile(concrete);
 	std::vector<std::vector<std::string>> vec2d;
-	l_reader.vec2d_str_from_table("csv_ability", vec2d);
+	l_reader.vec2d_str_from_table("csv_npc_ability", vec2d);
 	for (size_t ix = 1; ix < vec2d.size(); ++ix) {
 		std::string model = vec2d[ix][0];
 		ability[model];
@@ -81,8 +81,10 @@ std::wstring *status_data::get_name(const std::string &name_in)
 //
 void status_data::build_attr()
 {
-	//attr["black_warrior"].hp_max = 60.0f;
-	//attr["black_warrior"].hp = 60.0f;
+	attr["black_warrior"].hp_max = 60.0f;
+	attr["black_warrior"].hp = 60.0f;
+	attr["black_warrior"].hp_max = 10.0f;
+	attr["black_warrior"].hp = 10.0f;
 }
 void status_data::assign_attr(ai_points &points, const std::string &inst_name)
 {

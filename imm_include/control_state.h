@@ -8,7 +8,7 @@
 #ifndef CONTROL_STATE_H
 #define CONTROL_STATE_H
 #include "control_math.h"
-#include "imm_core.h"
+#include "imm_basic_util.h"
 #include "phy_prepare.h"
 namespace imm
 {
@@ -31,17 +31,19 @@ enum ORDER_ACT_TYPE
 	ORDER_GUARD       = 0x200,
 	ORDER_GUARD_NO    = 0x400,
 	ORDER_ENGAGE      = 0x800,
-	ORDER_HITFLY      = 0x1000,
-	ORDER_KNOCKDOWN   = 0x2000,
+	ORDER_DMG2        = 0x1000,
+	ORDER_KNOCK_DOWN  = 0x2000,
+	ORDER_DMG_DOWN    = 0x4000,
 };
 //
 enum ORDER_STAT_TYPE
 {
-	ORDER_IS_CLEAR  = 0x0,
-	ORDER_IS_WALK   = 0x1, // NOT: ORDER_IS_RUN
-	ORDER_IS_ROLL   = 0x2,
-	ORDER_IS_ENGAGE = 0x4,
-	ORDER_IS_GUARD  = 0x8,
+	ORDER_IS_CLEAR     = 0x0,
+	ORDER_IS_WALK      = 0x1, // NOT: ORDER_IS_RUN
+	ORDER_IS_ROLL      = 0x2,
+	ORDER_IS_ENGAGE    = 0x4,
+	ORDER_IS_GUARD     = 0x8,
+	ORDER_IS_DESTROYED = 0x10,
 };
 ////////////////
 // BATTLE_STAT
@@ -177,6 +179,22 @@ private:
 	pose_FallDown &operator=(const pose_FallDown&);
 };
 ////////////////
+// pose_Eliminated
+////////////////
+////////////////
+struct troll;
+struct pose_Eliminated: public state<troll>
+{
+	static pose_Eliminated *instance();
+	void enter(troll*);
+	void execute(troll*);
+	void exit(troll*);
+private:
+	pose_Eliminated() {;}
+	pose_Eliminated(const pose_Eliminated&);
+	pose_Eliminated &operator=(const pose_Eliminated&);
+};
+////////////////
 // act_str
 ////////////////
 ////////////////
@@ -190,11 +208,12 @@ struct act_str
 	std::string JumpLand();
 	std::string Engage();
 	std::string Damage();
-	std::string DamageFly();
+	std::string Damage2();
+	std::string DownCollapse();
 	std::string Roll();
 	std::string WalkRev();
 	std::string Guard();
-	std::string LieDown();
+	std::string DownKeep();
 	std::string GetUp();
 	int *p_order_s;
 };
@@ -210,7 +229,8 @@ struct action_data
 	float speed_Run;
 	float speed_Roll;
 	float frame_Damage;
-	float frame_DamageFly;
+	float frame_Damage2;
+	float frame_DownCollapse;
 	float frame_RollStep;
 	float frame_RollToIdle;
 	float frame_JumpLand;
@@ -221,8 +241,9 @@ struct action_data
 	float cd_RollStep;
 	float cd_RollToIdle;
 	float cd_GuardMin;
-	float cd_LieDown;
+	float cd_DownKeep;
 	float cd_GetUp;
+	float cd_Eliminated;
 };
 //
 action_data::action_data():
@@ -231,7 +252,8 @@ action_data::action_data():
 	speed_Run(13.5f),
 	speed_Roll(30.0f),
 	frame_Damage(10.0f*FRAME_RATE_1DIV),
-	frame_DamageFly(12.0f*FRAME_RATE_1DIV),
+	frame_Damage2(12.0f*FRAME_RATE_1DIV),
+	frame_DownCollapse(20.0f*FRAME_RATE_1DIV),
 	frame_RollStep(10.0f*FRAME_RATE_1DIV),
 	frame_RollToIdle(10.0f*FRAME_RATE_1DIV),
 	frame_JumpLand(7.0f*FRAME_RATE_1DIV),
@@ -242,8 +264,9 @@ action_data::action_data():
 	cd_RollStep(-1.0f),
 	cd_RollToIdle(-1.0f),
 	cd_GuardMin(-1.0f),
-	cd_LieDown(-1.0f),
-	cd_GetUp(-1.0f)
+	cd_DownKeep(-1.0f),
+	cd_GetUp(-1.0f),
+	cd_Eliminated(-1.0f)
 {
 	;
 }

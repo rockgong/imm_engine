@@ -8,7 +8,7 @@
 #ifndef STRU_LUA_HELP_H
 #define STRU_LUA_HELP_H
 #include <iostream>
-#include "imm_core.h"
+#include "imm_basic_util.h"
 #include "lua.hpp"
 #include <mutex>
 namespace imm

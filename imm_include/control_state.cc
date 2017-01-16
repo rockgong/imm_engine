@@ -365,10 +365,16 @@ pose_Damage *pose_Damage::instance()
 //
 void pose_Damage::enter(troll *tro)
 {
-	if (tro->order & ORDER_HITFLY) {
-		PTR->m_Inst.m_Stat[tro->index].check_set_ClipName(tro->act.DamageFly(), true);
-		tro->A.cd_Damage = tro->A.frame_DamageFly;
+	if (tro->order & ORDER_DMG2) {
+		PTR->m_Inst.m_Stat[tro->index].check_set_ClipName(tro->act.Damage2(), true);
+		tro->A.cd_Damage = tro->A.frame_Damage2;
 		tro->is_DOWN = true;
+	}
+	else if(tro->order & ORDER_DMG_DOWN) {
+		PTR->m_Inst.m_Stat[tro->index].check_set_ClipName(tro->act.Damage(), true);
+		tro->A.cd_Damage = tro->A.frame_Damage;
+		tro->is_DOWN = true;
+		tro->order_stat |= ORDER_IS_DESTROYED;
 	}
 	else {
 		if (tro->order_stat & ORDER_IS_GUARD) {
@@ -413,19 +419,29 @@ pose_FallDown *pose_FallDown::instance()
 //
 void pose_FallDown::enter(troll *tro)
 {
-	PTR->m_Inst.m_Stat[tro->index].check_set_ClipName(tro->act.LieDown());
 	tro->is_DOWN = true;
 	tro->is_GET_UP = false;
-	tro->A.cd_LieDown = 1.0f;
+	tro->A.cd_DownKeep = tro->A.frame_DownCollapse;
 	tro->A.cd_GetUp = tro->A.frame_GetUp;
+	if (tro->order_stat & ORDER_IS_DESTROYED) {
+		PTR->m_Inst.m_Stat[tro->index].check_set_ClipName(tro->act.DownCollapse(), true);
+	}
+	else {
+		PTR->m_Inst.m_Stat[tro->index].check_set_ClipName(tro->act.DownKeep());
+	}
 }
 //
 void pose_FallDown::execute(troll *tro)
 {
-	if (tro->A.cd_LieDown > 0.0f) {
-		tro->A.cd_LieDown -= PTR->m_Timer.delta_time();
+	if (tro->A.cd_DownKeep > 0.0f) {
+		tro->A.cd_DownKeep -= PTR->m_Timer.delta_time();
 	}
 	else if (tro->A.cd_GetUp > 0.0f) {
+	if (tro->order_stat & ORDER_IS_DESTROYED) {
+		tro->change_state(pose_Eliminated::instance());
+		return;
+		
+	}
 		// get up
 		tro->A.cd_GetUp -= PTR->m_Timer.delta_time();
 		if (!tro->is_GET_UP) {
@@ -444,6 +460,41 @@ void pose_FallDown::execute(troll *tro)
 void pose_FallDown::exit(troll *tro)
 {
 	tro->is_DOWN = false;
+}
+////////////////
+// pose_Eliminated
+////////////////
+////////////////
+pose_Eliminated *pose_Eliminated::instance()
+{
+	static pose_Eliminated instance;
+	return &instance;
+}
+//
+void pose_Eliminated::enter(troll *tro)
+{
+	tro->A.cd_Eliminated = 0.5f;
+	PTR->m_Inst.m_Stat[tro->index].check_set_ClipName(tro->act.DownKeep());
+}
+//
+void pose_Eliminated::execute(troll *tro)
+{
+	if (tro->A.cd_Eliminated < -2.0f) return;
+	if (tro->A.cd_Eliminated > 0.0f) {
+		tro->A.cd_Eliminated -= PTR->m_Timer.delta_time();
+	}
+	else {
+		PTR->m_Inst.m_Stat[tro->index].set_IsOffline(true);
+		XMFLOAT3 center = PTR->m_Inst.m_BoundW.center(tro->index);
+		PTR->m_SfxSelect.play_effect(SKILL_SYSTEM_ELIMINATE, tro->index, tro->index, center);
+		tro->A.cd_Eliminated = -3.0f;
+	}
+	tro;
+}
+//
+void pose_Eliminated::exit(troll *tro)
+{
+	tro;
 }
 //
 }

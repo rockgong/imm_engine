@@ -12,7 +12,7 @@
 #include <DXGI1_2.h>
 #include <string>
 #include <d2d1_1.h>
-#include "imm_core.h"
+#include "imm_basic_util.h"
 namespace imm
 {
 ////////////////

@@ -68,6 +68,7 @@ struct scene_mgr
 	audio_dxtk audio;
 	phy_wireframe<T_app> phy_wire;
 	land_surface<T_app> surface;
+	extra_texture<T_app> ex_texture;
 	std::string scene_ix;
 	std::map<std::string, loading_info> map_loading;
 	float begin_time;
@@ -91,6 +92,7 @@ scene_mgr<T_app>::scene_mgr():
 	audio(),
 	phy_wire(),
 	surface(),
+	ex_texture(),
 	scene_ix(),
 	map_loading(),
 	begin_time(FLT_MAX),
@@ -123,6 +125,7 @@ void scene_mgr<T_app>::init_load(T_app *app_in)
 	audio.init_load();
 	phy_wire.init(app);
 	surface.init(app);
+	ex_texture.init_load(app);
 	app->m_Hit.init_load(app);
 	app->m_Magic.init(app);
 	app->m_AiInfo.init(app);

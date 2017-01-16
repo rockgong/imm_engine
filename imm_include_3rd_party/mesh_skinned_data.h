@@ -5,7 +5,7 @@
 ////////////////
 #ifndef MESH_SKINNED_DATA_H
 #define MESH_SKINNED_DATA_H
-#include "imm_core.h"
+#include "imm_basic_util.h"
 namespace imm
 {
 ////////////////

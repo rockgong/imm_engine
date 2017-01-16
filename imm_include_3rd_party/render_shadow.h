@@ -6,7 +6,7 @@
 ////////////////
 #ifndef RENDER_SHADOW_H
 #define RENDER_SHADOW_H
-#include "imm_core.h"
+#include "imm_basic_util.h"
 namespace imm
 {
 ////////////////

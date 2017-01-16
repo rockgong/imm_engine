@@ -31,6 +31,7 @@ void steering::update(const float &dt)
 bool steering::is_out_of_control()
 {
 	if (PTR->m_Inst.m_Troll[index].current_state == pose_FallDown::instance()) return true;
+	if (PTR->m_Inst.m_Troll[index].current_state == pose_Eliminated::instance()) return true;	
 	return false;
 }
 ////////////////

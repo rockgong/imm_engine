@@ -67,13 +67,17 @@ struct basic_model_instance
 	std::string model_name;
 	bool is_in_frustum;
 	bool is_offline;
+	bool is_transparent;
+	size_t stat_ix;
 };
 //
 basic_model_instance::basic_model_instance():
 	model(nullptr),
 	model_name(),
 	is_in_frustum(true),
-	is_offline(false)
+	is_offline(false),
+	is_transparent(false),
+	stat_ix(SIZE_MAX)
 {
 	XMStoreFloat4x4(&world, XMMatrixIdentity());
 	XMStoreFloat4x4(&rot_front, XMMatrixIdentity());
@@ -83,6 +87,7 @@ bool basic_model_instance::is_appear()
 {
 	if (!is_in_frustum) return false;
 	if (is_offline) return false;
+	if (is_transparent) return false;
 	return true;	
 }
 //
@@ -175,6 +180,8 @@ struct skinned_model_instance
 	float time_switch;
 	bool is_in_frustum;
 	bool is_offline;
+	bool is_transparent;
+	size_t stat_ix;
 	bool is_switching;
 	void update(float dt);
 	void set_ClipName(const std::string &clip_name, const bool &is_reset_time);
@@ -196,6 +203,8 @@ skinned_model_instance::skinned_model_instance():
 	time_switch(-1.0f),
 	is_in_frustum(true),
 	is_offline(false),
+	is_transparent(false),
+	stat_ix(SIZE_MAX),
 	is_switching(false)
 {
 	XMStoreFloat4x4(&world, XMMatrixIdentity());
@@ -206,6 +215,7 @@ bool skinned_model_instance::is_appear()
 {
 	if (!is_in_frustum) return false;
 	if (is_offline) return false;
+	if (is_transparent) return false;
 	return true;	
 }
 //
@@ -365,6 +375,8 @@ struct simple_model_instance
 	bool is_textrue;
 	bool is_in_frustum;
 	bool is_offline;
+	bool is_transparent;
+	size_t stat_ix;
 };
 //
 template <typename vertex_type>
@@ -374,7 +386,9 @@ simple_model_instance<vertex_type>::simple_model_instance():
 	subid(0),
 	is_textrue(true),
 	is_in_frustum(true),
-	is_offline(false)
+	is_offline(false),
+	is_transparent(false),
+	stat_ix(SIZE_MAX)
 {
 	XMStoreFloat4x4(&world, XMMatrixIdentity());
 	XMStoreFloat4x4(&rot_front, XMMatrixIdentity());
@@ -386,6 +400,7 @@ bool simple_model_instance<vertex_type>::is_appear()
 {
 	if (!is_in_frustum) return false;
 	if (is_offline) return false;
+	if (is_transparent) return false;
 	return true;	
 }
 //

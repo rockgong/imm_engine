@@ -217,7 +217,8 @@ void imm_app::draw_scene_d3d()
 		m_Inst.m_Model.m_InstSkinnedAlpha,
 		view_proj,
 		shadow_transform,
-		to_tex_space
+		to_tex_space,
+		m_Inst.m_Stat
 	);
 	m_D3DDC->RSSetState(0);
 	// Draw skinned
@@ -229,7 +230,8 @@ void imm_app::draw_scene_d3d()
 		m_Inst.m_Model.m_InstSkinned,
 		view_proj,
 		shadow_transform,
-		to_tex_space
+		to_tex_space,
+		m_Inst.m_Stat
 	);
 	// Draw the others
 	m_Scene.draw_d3d_atmosphere(shadow_transform);

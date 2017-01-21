@@ -10,6 +10,7 @@
 #include "phy_position_logic.h"
 #include "stru_load_help.h"
 #include "mesh_basic_model.h"
+#include "stru_scene_swatch.h"
 #include <thread>
 namespace imm
 {
@@ -42,11 +43,12 @@ enum INST_PROPERTY
 struct instance_stat
 {
 	instance_stat();
-	const void *ptr;
+	const void *p_inst;
 	phy_property phy;
 	MODEL_TYPE type;
 	int property;
 	size_t index; // index for std::vector<instance_type>
+	ex_texture_info ex_tex_info;
 	XMFLOAT4X4 *get_World();
 	XMFLOAT4X4 *get_RotFront();
 	XMFLOAT4X4 *get_FinalTransform(size_t ix);
@@ -58,7 +60,9 @@ struct instance_stat
 	void set_WorldPos(const XMFLOAT3 &pos);
 	void set_IsInFrustum(const bool &is_in_frustum);
 	void set_IsOffline(const bool &is_offline);
+	void set_IsTransparent(const bool &is_transparent);
 	void set_ClipName(const std::string &clip_name, const bool &is_reset_time);
+	void set_SwatchTex(const SWATCH_TEXTURE &tex_type_in, const float &duration, ID3D11ShaderResourceView* resource);
 	void check_set_ClipName(const std::string &clip_name, const bool &is_reset_time);
 	void set_switch_ClipName(
 		const std::string &clip_first,
@@ -74,11 +78,12 @@ struct instance_stat
 };
 //
 instance_stat::instance_stat():
-	ptr(nullptr),
+	p_inst(nullptr),
 	phy(),
 	type(MODEL_BASIC),
 	property(INST_IS_NONE),
-	index(0)
+	index(0),
+	ex_tex_info()
 {
 	;
 }
@@ -86,46 +91,46 @@ instance_stat::instance_stat():
 XMFLOAT4X4 *instance_stat::get_World()
 {
 	switch(type) {
-	case MODEL_BASIC: return &(((basic_model_instance*)ptr)->world);
-	case MODEL_SKINNED: return &(((skinned_model_instance*)ptr)->world);
-	case MODEL_SIMPLE_P: return &(((simple_model_instance<vertex::pntt>*)ptr)->world);
+	case MODEL_BASIC: return &(((basic_model_instance*)p_inst)->world);
+	case MODEL_SKINNED: return &(((skinned_model_instance*)p_inst)->world);
+	case MODEL_SIMPLE_P: return &(((simple_model_instance<vertex::pntt>*)p_inst)->world);
 	}
 	assert(false);
-	return &(((basic_model_instance*)ptr)->world);
+	return &(((basic_model_instance*)p_inst)->world);
 }
 //
 XMFLOAT4X4 *instance_stat::get_RotFront()
 {
 	switch(type) {
-	case MODEL_BASIC: return &(((basic_model_instance*)ptr)->rot_front);
-	case MODEL_SKINNED: return &(((skinned_model_instance*)ptr)->rot_front);
-	case MODEL_SIMPLE_P: return &(((simple_model_instance<vertex::pntt>*)ptr)->rot_front);
+	case MODEL_BASIC: return &(((basic_model_instance*)p_inst)->rot_front);
+	case MODEL_SKINNED: return &(((skinned_model_instance*)p_inst)->rot_front);
+	case MODEL_SIMPLE_P: return &(((simple_model_instance<vertex::pntt>*)p_inst)->rot_front);
 	}
 	assert(false);
-	return &(((basic_model_instance*)ptr)->rot_front);
+	return &(((basic_model_instance*)p_inst)->rot_front);
 }
 //
 XMFLOAT4X4 *instance_stat::get_FinalTransform(size_t ix)
 {
 	assert(type == MODEL_SKINNED);
-	return &((skinned_model_instance*)ptr)->final_transforms[ix];
+	return &((skinned_model_instance*)p_inst)->final_transforms[ix];
 }
 //
 std::string *instance_stat::get_ModelName()
 {
 	switch(type) {
-	case MODEL_BASIC: return &(((basic_model_instance*)ptr)->model_name);
-	case MODEL_SKINNED: return &(((skinned_model_instance*)ptr)->model_name);
-	case MODEL_SIMPLE_P: return &(((simple_model_instance<vertex::pntt>*)ptr)->model_name);
+	case MODEL_BASIC: return &(((basic_model_instance*)p_inst)->model_name);
+	case MODEL_SKINNED: return &(((skinned_model_instance*)p_inst)->model_name);
+	case MODEL_SIMPLE_P: return &(((simple_model_instance<vertex::pntt>*)p_inst)->model_name);
 	}
 	assert(false);
-	return &(((basic_model_instance*)ptr)->model_name);
+	return &(((basic_model_instance*)p_inst)->model_name);
 }
 //
 std::string *instance_stat::get_ClipName()
 {
 	switch(type) {
-	case MODEL_SKINNED: return &(((skinned_model_instance*)ptr)->clip_name);
+	case MODEL_SKINNED: return &(((skinned_model_instance*)p_inst)->clip_name);
 	}
 	return &IMM_PATH["text"];
 }
@@ -135,14 +140,14 @@ PHY_BOUND_TYPE instance_stat::get_BoundType()
 	int bound_t = 0;
 	switch(type) {
 	case MODEL_BASIC:
-		bound_t = ((basic_model_instance*)ptr)->model->m_BoundType;
+		bound_t = ((basic_model_instance*)p_inst)->model->m_BoundType;
 		break;
 	case MODEL_SKINNED:
-		bound_t = ((skinned_model_instance*)ptr)->model->m_BoundType;
+		bound_t = ((skinned_model_instance*)p_inst)->model->m_BoundType;
 		break;
 	case MODEL_SIMPLE_P:
-		bound_t = ((simple_model_instance<vertex::pntt>*)ptr)->model->m_NameBoundType.at(
-			((simple_model_instance<vertex::pntt>*)ptr)->model_name);
+		bound_t = ((simple_model_instance<vertex::pntt>*)p_inst)->model->m_NameBoundType.at(
+			((simple_model_instance<vertex::pntt>*)p_inst)->model_name);
 		break;
 	}
 	assert(bound_t <= 2 && bound_t >= 0);
@@ -152,9 +157,9 @@ PHY_BOUND_TYPE instance_stat::get_BoundType()
 void instance_stat::set_World(const XMFLOAT4X4 &world)
 {
 	switch(type) {
-	case MODEL_BASIC: ((basic_model_instance*)ptr)->world = world; return;
-	case MODEL_SKINNED: ((skinned_model_instance*)ptr)->world = world; return;
-	case MODEL_SIMPLE_P: ((simple_model_instance<vertex::pntt>*)ptr)->world = world; return;
+	case MODEL_BASIC: ((basic_model_instance*)p_inst)->world = world; return;
+	case MODEL_SKINNED: ((skinned_model_instance*)p_inst)->world = world; return;
+	case MODEL_SIMPLE_P: ((simple_model_instance<vertex::pntt>*)p_inst)->world = world; return;
 	}
 	assert(false);
 }
@@ -162,9 +167,9 @@ void instance_stat::set_World(const XMFLOAT4X4 &world)
 void instance_stat::set_World(const XMMATRIX &world)
 {
 	switch(type) {
-	case MODEL_BASIC: XMStoreFloat4x4(&((basic_model_instance*)ptr)->world, world); return;
-	case MODEL_SKINNED: XMStoreFloat4x4(&((skinned_model_instance*)ptr)->world, world); return;
-	case MODEL_SIMPLE_P: XMStoreFloat4x4(&((simple_model_instance<vertex::pntt>*)ptr)->world, world); return;
+	case MODEL_BASIC: XMStoreFloat4x4(&((basic_model_instance*)p_inst)->world, world); return;
+	case MODEL_SKINNED: XMStoreFloat4x4(&((skinned_model_instance*)p_inst)->world, world); return;
+	case MODEL_SIMPLE_P: XMStoreFloat4x4(&((simple_model_instance<vertex::pntt>*)p_inst)->world, world); return;
 	}
 	assert(false);
 }
@@ -173,19 +178,19 @@ void instance_stat::set_WorldPos(const XMFLOAT3 &pos)
 {
 	switch(type) {
 	case MODEL_BASIC:
-		((basic_model_instance*)ptr)->world._41 = pos.x;
-		((basic_model_instance*)ptr)->world._42 = pos.y;
-		((basic_model_instance*)ptr)->world._43 = pos.z;
+		((basic_model_instance*)p_inst)->world._41 = pos.x;
+		((basic_model_instance*)p_inst)->world._42 = pos.y;
+		((basic_model_instance*)p_inst)->world._43 = pos.z;
 		return;
 	case MODEL_SKINNED:
-		((skinned_model_instance*)ptr)->world._41 = pos.x;
-		((skinned_model_instance*)ptr)->world._42 = pos.y;
-		((skinned_model_instance*)ptr)->world._43 = pos.z;
+		((skinned_model_instance*)p_inst)->world._41 = pos.x;
+		((skinned_model_instance*)p_inst)->world._42 = pos.y;
+		((skinned_model_instance*)p_inst)->world._43 = pos.z;
 		return;
 	case MODEL_SIMPLE_P:
-		((simple_model_instance<vertex::pntt>*)ptr)->world._41 = pos.x;
-		((simple_model_instance<vertex::pntt>*)ptr)->world._42 = pos.y;
-		((simple_model_instance<vertex::pntt>*)ptr)->world._43 = pos.z;
+		((simple_model_instance<vertex::pntt>*)p_inst)->world._41 = pos.x;
+		((simple_model_instance<vertex::pntt>*)p_inst)->world._42 = pos.y;
+		((simple_model_instance<vertex::pntt>*)p_inst)->world._43 = pos.z;
 		return;
 	}
 	assert(false);
@@ -194,9 +199,9 @@ void instance_stat::set_WorldPos(const XMFLOAT3 &pos)
 void instance_stat::set_IsInFrustum(const bool &is_in_frustum)
 {
 	switch(type) {
-	case MODEL_BASIC: ((basic_model_instance*)ptr)->is_in_frustum = is_in_frustum; return;
-	case MODEL_SKINNED: ((skinned_model_instance*)ptr)->is_in_frustum = is_in_frustum; return;
-	case MODEL_SIMPLE_P: ((simple_model_instance<vertex::pntt>*)ptr)->is_in_frustum = is_in_frustum; return;
+	case MODEL_BASIC: ((basic_model_instance*)p_inst)->is_in_frustum = is_in_frustum; return;
+	case MODEL_SKINNED: ((skinned_model_instance*)p_inst)->is_in_frustum = is_in_frustum; return;
+	case MODEL_SIMPLE_P: ((simple_model_instance<vertex::pntt>*)p_inst)->is_in_frustum = is_in_frustum; return;
 	}
 	assert(false);
 }
@@ -204,9 +209,19 @@ void instance_stat::set_IsInFrustum(const bool &is_in_frustum)
 void instance_stat::set_IsOffline(const bool &is_offline)
 {
 	switch(type) {
-	case MODEL_BASIC: ((basic_model_instance*)ptr)->is_offline = is_offline; return;
-	case MODEL_SKINNED: ((skinned_model_instance*)ptr)->is_offline = is_offline; return;
-	case MODEL_SIMPLE_P: ((simple_model_instance<vertex::pntt>*)ptr)->is_offline = is_offline; return;
+	case MODEL_BASIC: ((basic_model_instance*)p_inst)->is_offline = is_offline; return;
+	case MODEL_SKINNED: ((skinned_model_instance*)p_inst)->is_offline = is_offline; return;
+	case MODEL_SIMPLE_P: ((simple_model_instance<vertex::pntt>*)p_inst)->is_offline = is_offline; return;
+	}
+	assert(false);
+}
+//
+void instance_stat::set_IsTransparent(const bool &is_transparent)
+{
+	switch(type) {
+	case MODEL_BASIC: ((basic_model_instance*)p_inst)->is_transparent = is_transparent; return;
+	case MODEL_SKINNED: ((skinned_model_instance*)p_inst)->is_transparent = is_transparent; return;
+	case MODEL_SIMPLE_P: ((simple_model_instance<vertex::pntt>*)p_inst)->is_transparent = is_transparent; return;
 	}
 	assert(false);
 }
@@ -214,13 +229,24 @@ void instance_stat::set_IsOffline(const bool &is_offline)
 void instance_stat::set_ClipName(const std::string &clip_name, const bool &is_reset_time = false)
 {
 	if (type != MODEL_SKINNED) return;
-	((skinned_model_instance*)ptr)->set_ClipName(clip_name, is_reset_time);
+	((skinned_model_instance*)p_inst)->set_ClipName(clip_name, is_reset_time);
+}
+//
+void instance_stat::set_SwatchTex(const SWATCH_TEXTURE &tex_type_in, const float &duration, ID3D11ShaderResourceView* resource)
+{
+	ex_tex_info.resource = resource;
+	ex_tex_info.swatch = tex_type_in;
+	ex_tex_info.duration = duration;
+	ex_tex_info.is_twinkle = false;
+	if (tex_type_in == SWATCH_TEX_TWINKLE) {
+		ex_tex_info.is_twinkle = true;
+	}
 }
 //
 void instance_stat::check_set_ClipName(const std::string &clip_name, const bool &is_reset_time = false)
 {
 	if (type != MODEL_SKINNED) return;
-	((skinned_model_instance*)ptr)->check_set_ClipName(clip_name, is_reset_time);
+	((skinned_model_instance*)p_inst)->check_set_ClipName(clip_name, is_reset_time);
 }
 //
 void instance_stat::set_switch_ClipName(
@@ -229,27 +255,27 @@ void instance_stat::set_switch_ClipName(
 	const size_t &last_frame)
 {
 	if (type != MODEL_SKINNED) return;
-	((skinned_model_instance*)ptr)->set_switch_ClipName(clip_first, clip_second, last_frame);
+	((skinned_model_instance*)p_inst)->set_switch_ClipName(clip_first, clip_second, last_frame);
 }
 //
 void instance_stat::set_switch_current_ClipName(const std::string &clip_second,	const size_t &last_frame)
 {
 	if (type != MODEL_SKINNED) return;
-	((skinned_model_instance*)ptr)->set_switch_ClipName(*get_ClipName(), clip_second, last_frame);
+	((skinned_model_instance*)p_inst)->set_switch_ClipName(*get_ClipName(), clip_second, last_frame);
 }
 //
 void instance_stat::set_sequence_ClipName(const std::string &clip_second)
 {
 	if (type != MODEL_SKINNED) return;
-	((skinned_model_instance*)ptr)->set_sequence_ClipName(clip_second);
+	((skinned_model_instance*)p_inst)->set_sequence_ClipName(clip_second);
 }
 //
 bool instance_stat::is_alpha()
 {
 	switch(type) {
-	case MODEL_BASIC: return ((basic_model_instance*)ptr)->model->m_IsAlpha;
-	case MODEL_SKINNED: return ((skinned_model_instance*)ptr)->model->m_IsAlpha;
-	case MODEL_SIMPLE_P: return ((simple_model_instance<vertex::pntt>*)ptr)->model->m_IsAlpha;
+	case MODEL_BASIC: return ((basic_model_instance*)p_inst)->model->m_IsAlpha;
+	case MODEL_SKINNED: return ((skinned_model_instance*)p_inst)->model->m_IsAlpha;
+	case MODEL_SIMPLE_P: return ((simple_model_instance<vertex::pntt>*)p_inst)->model->m_IsAlpha;
 	}
 	assert(false);
 	return false;
@@ -265,16 +291,16 @@ bool instance_stat::is_invoke_physics()
 bool instance_stat::is_in_switch_clip()
 {
 	if (type != MODEL_SKINNED) return false;
-	if (((skinned_model_instance*)ptr)->time_switch > 0.0f) return true;
+	if (((skinned_model_instance*)p_inst)->time_switch > 0.0f) return true;
 	return false;
 }
 //
 bool instance_stat::get_IsInFrustum()
 {
 	switch(type) {
-	case MODEL_BASIC: return ((basic_model_instance*)ptr)->is_in_frustum;
-	case MODEL_SKINNED: return ((skinned_model_instance*)ptr)->is_in_frustum;
-	case MODEL_SIMPLE_P: return ((simple_model_instance<vertex::pntt>*)ptr)->is_in_frustum;
+	case MODEL_BASIC: return ((basic_model_instance*)p_inst)->is_in_frustum;
+	case MODEL_SKINNED: return ((skinned_model_instance*)p_inst)->is_in_frustum;
+	case MODEL_SIMPLE_P: return ((simple_model_instance<vertex::pntt>*)p_inst)->is_in_frustum;
 	}
 	assert(false);
 	return false;
@@ -283,9 +309,9 @@ bool instance_stat::get_IsInFrustum()
 bool instance_stat::get_IsOffline()
 {
 	switch(type) {
-	case MODEL_BASIC: return ((basic_model_instance*)ptr)->is_offline;
-	case MODEL_SKINNED: return ((skinned_model_instance*)ptr)->is_offline;
-	case MODEL_SIMPLE_P: return ((simple_model_instance<vertex::pntt>*)ptr)->is_offline;
+	case MODEL_BASIC: return ((basic_model_instance*)p_inst)->is_offline;
+	case MODEL_SKINNED: return ((skinned_model_instance*)p_inst)->is_offline;
+	case MODEL_SIMPLE_P: return ((simple_model_instance<vertex::pntt>*)p_inst)->is_offline;
 	}
 	assert(false);
 	return false;
@@ -569,15 +595,17 @@ void model_mgr::copy_instance(
 			m_NameBasicAlpha[m_InstBasicAlpha.size()] = new_name;
 			m_InstBasicAlpha.push_back(m_InstBasicAlpha.at(stat[ix].index));
 			stat.emplace_back();
-			stat.back().ptr = &m_InstBasicAlpha.back();
+			stat.back().p_inst = &m_InstBasicAlpha.back();
 			stat.back().index = m_InstBasicAlpha.size()-1;
+			m_InstBasicAlpha.back().stat_ix = stat.size()-1;
 		}
 		else {
 			m_NameBasic[m_InstBasic.size()] = new_name;
 			m_InstBasic.push_back(m_InstBasic.at(stat[ix].index));
 			stat.emplace_back();
-			stat.back().ptr = &m_InstBasic.back();
+			stat.back().p_inst = &m_InstBasic.back();
 			stat.back().index = m_InstBasic.size()-1;
+			m_InstBasic.back().stat_ix = stat.size()-1;
 		}
 		break;
 	case MODEL_SKINNED:

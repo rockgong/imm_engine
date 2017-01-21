@@ -110,7 +110,7 @@ void StreamOutGS(
 			Particle p;
 			p.InitialPosW = gEmitPosW+3.0f*vRandom;
 			p.InitialVelW = -1.0f*vRandom;
-			p.SizeW       = float2(0.1f, 0.1f);
+			p.SizeW       = float2(0.3f, 0.3f);
 			p.Age         = 0.0f;
 			p.Type        = PT_FLARE;
 			ptStream.Append(p);

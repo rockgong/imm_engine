@@ -109,7 +109,8 @@ void draw_inst_skinned(
 	std::vector<model_type> &model_inst,
 	XMMATRIX &view_proj,
 	XMMATRIX &shadow_transform,
-	XMMATRIX &to_tex_space
+	XMMATRIX &to_tex_space,
+	const std::vector<instance_stat> &stat
 )
 {
 	XMMATRIX world;
@@ -133,7 +134,10 @@ void draw_inst_skinned(
 				static_cast<int>(model_inst[ix].final_transforms.size()));
 			for(UINT subset = 0; subset < model_inst[ix].model->m_SubsetCount; ++subset) {
 				fx->set_Material(model_inst[ix].model->m_Mat[subset]);
-				fx->set_DiffuseMap(model_inst[ix].model->m_DiffuseMapSRV[subset]);
+				if (stat[model_inst[ix].stat_ix].ex_tex_info.is_active) {
+					fx->set_DiffuseMap(stat[model_inst[ix].stat_ix].ex_tex_info.resource);
+				}
+				else fx->set_DiffuseMap(model_inst[ix].model->m_DiffuseMapSRV[subset]);
 				fx->set_NormalMap(model_inst[ix].model->m_NormalMapSRV[subset]);
 				tech->GetPassByIndex(p)->Apply(0, D3DDC);
 				model_inst[ix].model->m_ModelMesh.draw(D3DDC, subset);

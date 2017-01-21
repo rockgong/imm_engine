@@ -172,8 +172,31 @@ void scene_dir_lights_common(light_dir dir_lights[]){
 ////////////////
 enum SWATCH_TEXTURE
 {
-	SWATCH_GRID,
+	SWATCH_TEX_NONE,
+	SWATCH_TEX_GRID,
+	SWATCH_TEX_TWINKLE,
 };
+////////////////
+// ex_texture_info
+////////////////
+////////////////
+struct ex_texture_info
+{
+	ex_texture_info();
+	SWATCH_TEXTURE swatch;
+	float duration;
+	bool is_active;
+	bool is_twinkle;
+	ID3D11ShaderResourceView* resource;
+};
+ex_texture_info::ex_texture_info():
+	duration(-1.0f),
+	is_active(false),
+	is_twinkle(false),
+	resource(nullptr)
+{
+	;
+}
 ////////////////
 // extra_texture
 ////////////////
@@ -183,6 +206,9 @@ struct extra_texture
 {
 	extra_texture();
 	void init_load(T_app *app_in);
+	void update();
+	void twinkle(const size_t &stat_ix);
+	float twinkle_interval;
 	SWATCH_TEXTURE swatch_map(const std::string &name_in);
 	T_app *app;
 	texture_mgr manager;
@@ -191,11 +217,10 @@ struct extra_texture
 //
 template <typename T_app>
 extra_texture<T_app>::extra_texture():
+	twinkle_interval(0.3f),
 	app(nullptr),
-	manager(),
-	texture()
+	manager()
 {
-	
 	;
 }
 //
@@ -219,10 +244,34 @@ void extra_texture<T_app>::init_load(T_app *app_in)
 }
 //
 template <typename T_app>
+void extra_texture<T_app>::update()
+{
+	for (auto &inst: app->m_Inst.m_Stat) {
+		if (!inst.ex_tex_info.is_active) continue;
+		if (inst.ex_tex_info.is_twinkle) {
+			size_t stat_ix = &inst - &app->m_Inst.m_Stat[0];
+			twinkle(stat_ix);
+		}
+		assert(inst.ex_tex_info.resource);
+		inst.ex_tex_info.duration -= app->m_Timer.delta_time();
+		if (inst.ex_tex_info.duration < 0.0f) {
+			inst.ex_tex_info.is_active = false;
+			inst.ex_tex_info.swatch = SWATCH_TEX_NONE;
+		}
+	}
+}
+//
+template <typename T_app>
+void extra_texture<T_app>::twinkle(const size_t &stat_ix)
+{
+	app->m_Inst.m_Stat[stat_ix].set_IsTransparent(true);
+}
+//
+template <typename T_app>
 SWATCH_TEXTURE extra_texture<T_app>::swatch_map(const std::string &name_in)
 {
-	if (name_in == "GRID") return SWATCH_GRID;
-	return SWATCH_GRID;
+	if (name_in == "GRID") return SWATCH_TEX_GRID;
+	return SWATCH_TEX_NONE;
 }
 //
 }

@@ -357,20 +357,20 @@ void phy_bound_mgr<T_app>::set_phy_value(const size_t &ix)
 		assert(false);
 	}
 	//
-	auto ptr = app->m_Inst.m_Stat[ix].ptr;
+	auto p_inst = app->m_Inst.m_Stat[ix].p_inst;
 	switch(app->m_Inst.m_Stat[ix].type) {
 	case MODEL_BASIC:
 		app->m_Inst.m_Stat[ix].phy.intera_tp = 
-			&((basic_model_instance*)ptr)->model->m_InteractiveType;
+			&((basic_model_instance*)p_inst)->model->m_InteractiveType;
 		break;
 	case MODEL_SKINNED:
 		app->m_Inst.m_Stat[ix].phy.intera_tp = 
-			&((skinned_model_instance*)ptr)->model->m_InteractiveType;
+			&((skinned_model_instance*)p_inst)->model->m_InteractiveType;
 		break;
 	case MODEL_SIMPLE_P:
 		app->m_Inst.m_Stat[ix].phy.intera_tp = 
-			&((simple_model_instance<vertex::pntt>*)ptr)->model->m_NameInteractiveType.at(
-			((simple_model_instance<vertex::pntt>*)ptr)->model_name);
+			&((simple_model_instance<vertex::pntt>*)p_inst)->model->m_NameInteractiveType.at(
+			((simple_model_instance<vertex::pntt>*)p_inst)->model_name);
 		break;
 	}
 	//

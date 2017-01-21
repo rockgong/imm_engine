@@ -142,7 +142,7 @@ void audio_dxtk::play_effect(const std::string &name)
 void audio_dxtk::play_effect_interval(const std::string &name, const float &now_time)
 {
 	float interval = now_time - last_play_time["name"];
-	if (abs(interval) > 0.1f) play_effect(name);
+	if (abs(interval) > 0.3f) play_effect(name);
 	last_play_time["name"] = now_time;
 }
 //

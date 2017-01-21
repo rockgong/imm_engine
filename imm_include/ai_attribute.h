@@ -284,9 +284,9 @@ template <typename T_app>
 void ai_attr<T_app>::calc_skill_melee_immediately(const SKILL_SPECIFY &specify, const size_t &ix_atk, const size_t &ix_dmg)
 {
 	specify;
-	ix_atk;
 	app->m_Inst.m_Troll[ix_dmg].order |= ORDER_DMG;
 	if (app->m_Control.atk.current_impulse(ix_atk) > ATK_IMPULSE_DMG2) {
+		assert(false);
 		app->m_Inst.m_Troll[ix_dmg].order |= ORDER_DMG2;
 	}
 }

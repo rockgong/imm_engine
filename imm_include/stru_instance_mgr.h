@@ -27,14 +27,14 @@ struct instance_mgr
 	void reload_scene_instance_relate();
 	template <typename instance, typename get_pos>
 	void push_back_basic(
-		const std::vector<instance> &v_inst,
+		std::vector<instance> &v_inst,
 		instance_stat &inst_stat,
 		size_t &k,
 		const get_pos &get_pos_f,
 		const std::map<size_t, std::string> &name);
 	template <typename instance, typename get_pos>
 	void push_back_pntt(
-		const std::vector<instance> &v_inst,
+		std::vector<instance> &v_inst,
 		instance_stat &inst_stat,
 		size_t &k,
 		const get_pos &get_pos_f,
@@ -188,7 +188,7 @@ void instance_mgr<T_app>::reload_scene_instance_relate()
 template <typename T_app>
 template <typename instance, typename get_pos>
 void instance_mgr<T_app>::push_back_basic(
-	const std::vector<instance> &v_inst,
+	std::vector<instance> &v_inst,
 	instance_stat &inst_stat,
 	size_t &k,
 	const get_pos &get_pos_f,
@@ -196,9 +196,10 @@ void instance_mgr<T_app>::push_back_basic(
 {
 	for (size_t ix = 0; ix != v_inst.size(); ++ix) {
 		m_NameMap[name.at(ix)] = k++;
-		inst_stat.ptr = &v_inst[ix];
+		inst_stat.p_inst = &v_inst[ix];
 		inst_stat.index = ix;
 		m_Stat.push_back(inst_stat);
+		v_inst[ix].stat_ix = m_Stat.size()-1;
 		m_BoundL.push_back_empty(m_Stat.back().get_BoundType());
 		m_BoundW.push_back_empty(m_Stat.back().get_BoundType());
 		switch(m_Stat.back().get_BoundType()) {
@@ -238,7 +239,7 @@ void instance_mgr<T_app>::push_back_basic(
 template <typename T_app>
 template <typename instance, typename get_pos>
 void instance_mgr<T_app>::push_back_pntt(
-	const std::vector<instance> &v_inst,
+	std::vector<instance> &v_inst,
 	instance_stat &inst_stat,
 	size_t &k,
 	const get_pos &get_pos_f,
@@ -246,9 +247,10 @@ void instance_mgr<T_app>::push_back_pntt(
 {
 	for (size_t ix = 0; ix != v_inst.size(); ++ix) {
 		m_NameMap[name.at(ix)] = k++;
-		inst_stat.ptr = &v_inst[ix];
+		inst_stat.p_inst = &v_inst[ix];
 		inst_stat.index = ix;
 		m_Stat.push_back(inst_stat);
+		v_inst[ix].stat_ix = m_Stat.size()-1;
 		m_BoundL.push_back_empty(PHY_BOUND_BOX);
 		m_BoundW.push_back_empty(PHY_BOUND_BOX);
 		auto vert_range = v_inst[ix].model->get_VertexRange(v_inst[ix].subid);
@@ -272,20 +274,20 @@ void instance_mgr<T_app>::copy_instance(const std::string &inst_name, const std:
 	size_t inst_ix = m_NameMap[inst_name];
 	if (m_Stat[inst_ix].type != MODEL_BASIC) return;
 	if (m_Stat[inst_ix].get_BoundType() != PHY_BOUND_BOX) return;
-	size_t inst_size = m_Stat.size();
+	size_t size_previous = m_Stat.size();
 	m_Model.copy_instance(m_Stat, inst_ix, new_name);
-	if (inst_size == m_Stat.size()-1) {
-		m_NameMap[new_name] = inst_size;
-		m_IndexMap[inst_size] = new_name;
-		assert(m_Troll.size() == inst_size);
+	if (size_previous == m_Stat.size()-1) {
+		m_NameMap[new_name] = size_previous;
+		m_IndexMap[size_previous] = new_name;
+		assert(m_Troll.size() == size_previous);
 		m_Troll.emplace_back();
-		m_Troll.at(inst_size).index = inst_size;
+		m_Troll.at(size_previous).index = size_previous;
 		m_BoundL.push_back_empty(m_Stat.back().get_BoundType());
 		m_BoundW.push_back_empty(m_Stat.back().get_BoundType());
 		m_BoundL.bd0.back() = m_BoundL.bd0[m_BoundL.map.at(inst_ix).second];
-		XMMATRIX world = XMLoadFloat4x4(m_Stat[inst_size].get_World());
-		m_BoundL.transform(inst_size, m_BoundW, world);
-		m_BoundW.set_phy_value(inst_size);
+		XMMATRIX world = XMLoadFloat4x4(m_Stat[size_previous].get_World());
+		m_BoundL.transform(size_previous, m_BoundW, world);
+		m_BoundW.set_phy_value(size_previous);
 	}
 }
 //

@@ -40,12 +40,11 @@ template <typename T_app>
 void sfx_select<T_app>::play_effect(const SKILL_SPECIFY &skill, const size_t &ix1, const size_t &ix2, const XMFLOAT3 &center)
 {
 	ix1;
-	ID3D11ShaderResourceView* resource;
+	ID3D11ShaderResourceView* resource = nullptr;
 	switch(skill) {
 	case SKILL_SYSTEM_ELIMINATE1:	
 		app->m_Scene.plasma.push_back(PLASMA_CHARGE, 0.5f, center);
-		resource = app->m_Scene.ex_texture.texture[SWATCH_TEX_GRID];
-		app->m_Inst.m_Stat[ix1].set_SwatchTex(SWATCH_TEX_GRID, 1.0f, resource);
+		app->m_Inst.m_Stat[ix1].set_SwatchTex(SWATCH_TEX_TWINKLE, 1.0f, resource);
 		return;
 		break;
 	case SKILL_SYSTEM_ELIMINATE2:

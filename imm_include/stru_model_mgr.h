@@ -238,8 +238,10 @@ void instance_stat::set_SwatchTex(const SWATCH_TEXTURE &tex_type_in, const float
 	ex_tex_info.swatch = tex_type_in;
 	ex_tex_info.duration = duration;
 	ex_tex_info.is_twinkle = false;
+	ex_tex_info.is_change_tex = true;
 	if (tex_type_in == SWATCH_TEX_TWINKLE) {
 		ex_tex_info.is_twinkle = true;
+		ex_tex_info.is_change_tex = false;
 	}
 }
 //

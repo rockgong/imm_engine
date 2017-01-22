@@ -134,7 +134,7 @@ void draw_inst_skinned(
 				static_cast<int>(model_inst[ix].final_transforms.size()));
 			for(UINT subset = 0; subset < model_inst[ix].model->m_SubsetCount; ++subset) {
 				fx->set_Material(model_inst[ix].model->m_Mat[subset]);
-				if (stat[model_inst[ix].stat_ix].ex_tex_info.is_active) {
+				if (stat[model_inst[ix].stat_ix].ex_tex_info.is_change_tex) {
 					fx->set_DiffuseMap(stat[model_inst[ix].stat_ix].ex_tex_info.resource);
 				}
 				else fx->set_DiffuseMap(model_inst[ix].model->m_DiffuseMapSRV[subset]);

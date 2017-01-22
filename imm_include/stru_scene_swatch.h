@@ -185,13 +185,15 @@ struct ex_texture_info
 	ex_texture_info();
 	SWATCH_TEXTURE swatch;
 	float duration;
-	bool is_active;
+	float cd_twinkle;
+	bool is_change_tex;
 	bool is_twinkle;
 	ID3D11ShaderResourceView* resource;
 };
 ex_texture_info::ex_texture_info():
 	duration(-1.0f),
-	is_active(false),
+	cd_twinkle(0.0f),
+	is_change_tex(false),
 	is_twinkle(false),
 	resource(nullptr)
 {
@@ -209,6 +211,7 @@ struct extra_texture
 	void update();
 	void twinkle(const size_t &stat_ix);
 	float twinkle_interval;
+	ID3D11ShaderResourceView* get_resource(const SWATCH_TEXTURE &swatch_tex_in);
 	SWATCH_TEXTURE swatch_map(const std::string &name_in);
 	T_app *app;
 	texture_mgr manager;
@@ -247,16 +250,21 @@ template <typename T_app>
 void extra_texture<T_app>::update()
 {
 	for (auto &inst: app->m_Inst.m_Stat) {
-		if (!inst.ex_tex_info.is_active) continue;
+		if (!inst.ex_tex_info.is_change_tex && !inst.ex_tex_info.is_twinkle) continue;
+		inst.ex_tex_info.duration -= app->m_Timer.delta_time();
+		if (inst.ex_tex_info.duration < 0.0f) {
+			if (inst.ex_tex_info.is_change_tex) {
+				inst.ex_tex_info.is_change_tex = false;
+				inst.ex_tex_info.swatch = SWATCH_TEX_NONE;
+			}
+			if (inst.ex_tex_info.is_twinkle) {
+				inst.ex_tex_info.is_twinkle = false;
+				inst.set_IsTransparent(false);
+			}
+		}
 		if (inst.ex_tex_info.is_twinkle) {
 			size_t stat_ix = &inst - &app->m_Inst.m_Stat[0];
 			twinkle(stat_ix);
-		}
-		assert(inst.ex_tex_info.resource);
-		inst.ex_tex_info.duration -= app->m_Timer.delta_time();
-		if (inst.ex_tex_info.duration < 0.0f) {
-			inst.ex_tex_info.is_active = false;
-			inst.ex_tex_info.swatch = SWATCH_TEX_NONE;
 		}
 	}
 }
@@ -264,7 +272,21 @@ void extra_texture<T_app>::update()
 template <typename T_app>
 void extra_texture<T_app>::twinkle(const size_t &stat_ix)
 {
-	app->m_Inst.m_Stat[stat_ix].set_IsTransparent(true);
+	if (app->m_Inst.m_Stat[stat_ix].ex_tex_info.cd_twinkle > 0.0f) {
+		app->m_Inst.m_Stat[stat_ix].ex_tex_info.cd_twinkle += app->m_Timer.delta_time();
+	}
+	else {
+		app->m_Inst.m_Stat[stat_ix].ex_tex_info.cd_twinkle -= app->m_Timer.delta_time();
+	}
+	float time_twinkle = 0.05f;
+	if (app->m_Inst.m_Stat[stat_ix].ex_tex_info.cd_twinkle > time_twinkle) {
+		app->m_Inst.m_Stat[stat_ix].ex_tex_info.cd_twinkle = -0.0001f;
+		app->m_Inst.m_Stat[stat_ix].set_IsTransparent(true);
+	}
+	if (app->m_Inst.m_Stat[stat_ix].ex_tex_info.cd_twinkle < -time_twinkle) {
+		app->m_Inst.m_Stat[stat_ix].ex_tex_info.cd_twinkle = 0.0001f;
+		app->m_Inst.m_Stat[stat_ix].set_IsTransparent(false);
+	}
 }
 //
 template <typename T_app>
@@ -272,6 +294,13 @@ SWATCH_TEXTURE extra_texture<T_app>::swatch_map(const std::string &name_in)
 {
 	if (name_in == "GRID") return SWATCH_TEX_GRID;
 	return SWATCH_TEX_NONE;
+}
+//
+template <typename T_app>
+ID3D11ShaderResourceView* extra_texture<T_app>::get_resource(const SWATCH_TEXTURE &swatch_tex_in)
+{
+	if (texture.count(swatch_tex_in)) return texture[swatch_tex_in];
+	return nullptr;
 }
 //
 }

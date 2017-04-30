@@ -62,14 +62,14 @@ struct instance_stat
 	void set_IsOffline(const bool &is_offline);
 	void set_IsTransparent(const bool &is_transparent);
 	void set_ClipName(const std::string &clip_name, const bool &is_reset_time);
-	void set_SwatchTex(const SWATCH_TEXTURE &tex_type_in, const float &duration, ID3D11ShaderResourceView* resource);
-	void check_set_ClipName(const std::string &clip_name, const bool &is_reset_time);
+	void check_set_ClipName(const std::string &clip_name, const bool &is_reset_time, const float &time_scale_in);
 	void set_switch_ClipName(
 		const std::string &clip_first,
 		const std::string &clip_second,
 		const size_t &last_frame);
 	void set_switch_current_ClipName(const std::string &clip_second, const size_t &last_frame);
 	void set_sequence_ClipName(const std::string &clip_second);
+	void set_SwatchTex(const SWATCH_TEXTURE &tex_type_in, const float &duration, ID3D11ShaderResourceView* resource);
 	bool is_alpha();
 	bool is_invoke_physics();
 	bool is_in_switch_clip();
@@ -232,23 +232,10 @@ void instance_stat::set_ClipName(const std::string &clip_name, const bool &is_re
 	((skinned_model_instance*)p_inst)->set_ClipName(clip_name, is_reset_time);
 }
 //
-void instance_stat::set_SwatchTex(const SWATCH_TEXTURE &tex_type_in, const float &duration, ID3D11ShaderResourceView* resource)
-{
-	ex_tex_info.resource = resource;
-	ex_tex_info.swatch = tex_type_in;
-	ex_tex_info.duration = duration;
-	ex_tex_info.is_twinkle = false;
-	ex_tex_info.is_change_tex = true;
-	if (tex_type_in == SWATCH_TEX_TWINKLE) {
-		ex_tex_info.is_twinkle = true;
-		ex_tex_info.is_change_tex = false;
-	}
-}
-//
-void instance_stat::check_set_ClipName(const std::string &clip_name, const bool &is_reset_time = false)
+void instance_stat::check_set_ClipName(const std::string &clip_name, const bool &is_reset_time = false, const float &time_scale_in = 1.0f)
 {
 	if (type != MODEL_SKINNED) return;
-	((skinned_model_instance*)p_inst)->check_set_ClipName(clip_name, is_reset_time);
+	((skinned_model_instance*)p_inst)->check_set_ClipName(clip_name, is_reset_time, time_scale_in);
 }
 //
 void instance_stat::set_switch_ClipName(
@@ -272,6 +259,19 @@ void instance_stat::set_sequence_ClipName(const std::string &clip_second)
 	((skinned_model_instance*)p_inst)->set_sequence_ClipName(clip_second);
 }
 //
+void instance_stat::set_SwatchTex(const SWATCH_TEXTURE &tex_type_in, const float &duration, ID3D11ShaderResourceView* resource)
+{
+	ex_tex_info.resource = resource;
+	ex_tex_info.swatch = tex_type_in;
+	ex_tex_info.duration = duration;
+	ex_tex_info.is_twinkle = false;
+	ex_tex_info.is_change_tex = true;
+	if (tex_type_in == SWATCH_TEX_TWINKLE) {
+		ex_tex_info.is_twinkle = true;
+		ex_tex_info.is_change_tex = false;
+	}
+}
+//
 bool instance_stat::is_alpha()
 {
 	switch(type) {
@@ -287,6 +287,7 @@ bool instance_stat::is_invoke_physics()
 {
 	if (property & INST_IS_ATTACH) return false;
 	if (property & INST_IS_EFFECT) return false;
+	if (get_IsOffline()) return false;
 	return true;
 }
 //

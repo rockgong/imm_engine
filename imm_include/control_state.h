@@ -244,6 +244,7 @@ struct action_data
 	float cd_DownKeep;
 	float cd_GetUp;
 	float cd_Eliminated;
+	float scale_time_DamageDown;
 };
 //
 action_data::action_data():
@@ -266,7 +267,8 @@ action_data::action_data():
 	cd_GuardMin(-1.0f),
 	cd_DownKeep(-1.0f),
 	cd_GetUp(-1.0f),
-	cd_Eliminated(-1.0f)
+	cd_Eliminated(-1.0f),
+	scale_time_DamageDown(0.7f)
 {
 	;
 }

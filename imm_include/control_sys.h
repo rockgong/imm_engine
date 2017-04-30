@@ -58,6 +58,7 @@ struct control_sys
 	control_xinput pad;
 	control_cam<T_app> cam;
 	control_atk<T_app> atk;
+	input_setting setting;
 };
 //
 template <typename T_app>
@@ -69,7 +70,9 @@ control_sys<T_app>::control_sys():
 	//style1(CONTROL_CAM_FREE),
 	wait_ui_disappear(0.0f),
 	pad(),
-	cam()
+	cam(),
+	atk(),
+	setting()
 {
 	mouse_down.x = 0;
 	mouse_down.y = 0;

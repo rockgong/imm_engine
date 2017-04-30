@@ -178,19 +178,26 @@ struct skinned_model_instance
 	std::vector<XMFLOAT4X4> final_transforms;
 	float time_pos;
 	float time_switch;
+	float time_scale;
 	bool is_in_frustum;
 	bool is_offline;
 	bool is_transparent;
 	size_t stat_ix;
 	bool is_switching;
 	void update(float dt);
-	void set_ClipName(const std::string &clip_name, const bool &is_reset_time);
-	void check_set_ClipName(const std::string &clip_name, const bool &is_reset_time);
+	void set_ClipName(
+		const std::string &clip_name,
+		const bool &is_reset_time,
+		const float &time_scale_in);
+	void check_set_ClipName(
+		const std::string &clip_name,
+		const bool &is_reset_time,
+		const float &time_scale_in);
 	void set_switch_ClipName(
 		const std::string &clip_first,
 		const std::string &clip_second,
-		const size_t &last_frame);
-	void set_sequence_ClipName(const std::string &clip_second);
+		const size_t &last_frame, const float &time_scale_in);
+	void set_sequence_ClipName(const std::string &clip_second, const float &time_scale_in);
 };
 //
 skinned_model_instance::skinned_model_instance():
@@ -201,6 +208,7 @@ skinned_model_instance::skinned_model_instance():
 	final_transforms(),
 	time_pos(0.0f),
 	time_switch(-1.0f),
+	time_scale(1.0f),
 	is_in_frustum(true),
 	is_offline(false),
 	is_transparent(false),
@@ -267,7 +275,7 @@ void skinned_model_instance::update(float dt)
 {
 	// if instance is not in frustum, skinned not update, actions will be mistake
 	if (!is_in_frustum) return;
-	time_pos += dt;
+	time_pos += dt*time_scale;
 	if (time_switch > 0.0f) {
 		time_switch -= dt;
 		model->m_SkinnedData.get_final_transforms(switch_name, time_pos, final_transforms);
@@ -282,8 +290,12 @@ void skinned_model_instance::update(float dt)
 	if (time_pos > model->m_SkinnedData.get_clip_end_time(clip_name)) time_pos = 0.0f;
 }
 //
-void skinned_model_instance::set_ClipName(const std::string &c_name, const bool &is_reset_time = false)
+void skinned_model_instance::set_ClipName(
+	const std::string &c_name,
+	const bool &is_reset_time = false,
+	const float &time_scale_in = 1.0f)
 {
+	time_scale = time_scale_in;
 	if (!model->m_SkinnedData.check_clip_name(c_name)) {
 		std::string err_str(".m3d file clip name error: ");
 		err_str += c_name;
@@ -297,8 +309,12 @@ void skinned_model_instance::set_ClipName(const std::string &c_name, const bool 
 	}
 }
 //
-void skinned_model_instance::check_set_ClipName(const std::string &c_name, const bool &is_reset_time = false)
+void skinned_model_instance::check_set_ClipName(
+	const std::string &c_name,
+	const bool &is_reset_time = false,
+	const float &time_scale_in = 1.0f)
 {
+	time_scale = time_scale_in;
 	if (model->m_SkinnedData.check_clip_name(c_name)) {
 		if (is_reset_time) time_pos = 0.0f;
 		clip_name = c_name;
@@ -310,8 +326,10 @@ void skinned_model_instance::check_set_ClipName(const std::string &c_name, const
 void skinned_model_instance::set_switch_ClipName(
 	const std::string &clip_first,
 	const std::string &clip_second,
-	const size_t &last_frame)
+	const size_t &last_frame,
+	const float &time_scale_in = 1.0f)
 {
+	time_scale = time_scale_in;
 	switch_name = "SWITCH_"+clip_first+"_"+clip_second+"_"+std::to_string(last_frame);
 	if (!model->m_SkinnedData.check_clip_name(switch_name)) {
 		model->m_SkinnedData.create_clip_to_clip_anim(clip_first, clip_second, last_frame);
@@ -322,8 +340,9 @@ void skinned_model_instance::set_switch_ClipName(
 	time_pos = 0.0f;
 }
 //
-void skinned_model_instance::set_sequence_ClipName(const std::string &clip_second)
+void skinned_model_instance::set_sequence_ClipName(const std::string &clip_second, const float &time_scale_in = 1.0f)
 {
+	time_scale = time_scale_in;
 	switch_name = clip_name;
 	clip_name = clip_second;
 	if (time_pos < 0.1f) {

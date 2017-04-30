@@ -373,12 +373,12 @@ void pose_Damage::enter(troll *tro)
 		return;
 	}
 	if (tro->order & ORDER_DMG_DOWN) {
-		PTR->m_Inst.m_Stat[tro->index].check_set_ClipName(tro->act.Damage(), true);
-		tro->A.cd_Damage = tro->A.frame_Damage;
+		PTR->m_Inst.m_Stat[tro->index].check_set_ClipName(tro->act.Damage(), true, tro->A.scale_time_DamageDown);
+		tro->A.cd_Damage = tro->A.frame_Damage/tro->A.scale_time_DamageDown;
 		tro->is_DOWN = true;
 		tro->order_stat |= ORDER_IS_DESTROYED;
 		tro->order = ORDER_NONE;
-		return;		
+		return;
 	}
 	if (tro->order_stat & ORDER_IS_GUARD) {
 		PTR->m_Inst.m_Stat[tro->index].check_set_ClipName(tro->act.Damage(), true);
@@ -397,6 +397,8 @@ void pose_Damage::execute(troll *tro)
 		tro->is_DOWN = true;
 		tro->order_stat |= ORDER_IS_DESTROYED;
 		tro->order = ORDER_NONE;
+		PTR->m_Inst.m_Stat[tro->index].check_set_ClipName(tro->act.Damage(), false, tro->A.scale_time_DamageDown);
+		tro->A.cd_Damage /= tro->A.scale_time_DamageDown;
 	}
 	tro->A.cd_Damage -= PTR->m_Timer.delta_time();
 	if (tro->A.cd_Damage < 0.0f) {
@@ -497,7 +499,6 @@ void pose_Eliminated::execute(troll *tro)
 		PTR->m_SfxSelect.play_effect(SKILL_SYSTEM_ELIMINATE2, tro->index, tro->index, center);
 		tro->A.cd_Eliminated = -3.0f;
 	}
-	tro;
 }
 //
 void pose_Eliminated::exit(troll *tro)

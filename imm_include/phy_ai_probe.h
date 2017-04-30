@@ -159,7 +159,6 @@ void ai_probe<T_app>::rebuild()
 	}
 }
 //
-//
 template <typename T_app>
 void ai_probe<T_app>::update(const float &dt)
 {

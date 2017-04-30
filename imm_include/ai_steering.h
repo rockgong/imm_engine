@@ -28,10 +28,11 @@ enum AI_TACTICS
 ////////////////
 enum AI_REPORT
 {
-	AI_REP_NONE      = 0x0,
-	AI_REP_TAR_CLOSE = 0x1,
-	AI_REP_TAR_AWAY  = 0x2,
-	AI_REP_ALERT     = 0x4,
+	AI_REP_NONE          = 0x0,
+	AI_REP_TAR_CLOSE     = 0x1,
+	AI_REP_TAR_AWAY      = 0x2,
+	AI_REP_ALERT         = 0x4,
+	AI_REP_TAR_ELIMINATE = 0x8,
 };
 ////////////////
 // ai_Standby

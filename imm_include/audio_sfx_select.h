@@ -45,22 +45,22 @@ void sfx_select<T_app>::play_effect(const SKILL_SPECIFY &skill, const size_t &ix
 	case SKILL_SYSTEM_ELIMINATE1:	
 		app->m_Scene.plasma.push_back(PLASMA_CHARGE, 0.5f, center);
 		app->m_Inst.m_Stat[ix1].set_SwatchTex(SWATCH_TEX_TWINKLE, 1.0f, resource);
-		return;
 		break;
 	case SKILL_SYSTEM_ELIMINATE2:
 		app->m_Scene.plasma.push_back(PLASMA_BROKEN, 2.0f, center);
-		app->m_Scene.audio.play_effect(sfx::Lightning);
-		return;
+		app->m_Scene.audio.play_effect(sfx::Breaking);
 		break;
 	}
 	//
-	if (app->m_Inst.m_Troll[ix2].order_stat & ORDER_IS_GUARD) {
-		app->m_Scene.plasma.push_back(PLASMA_STRIKE2, 0.5f, center);
-		app->m_Scene.audio.play_effect(sfx::PunchLight);
-	}
-	else {
-		app->m_Scene.plasma.push_back(PLASMA_STRIKE, 0.5f, center);
-		app->m_Scene.audio.play_effect(sfx::Punch);
+	if (skill == SKILL_MELEE_STANDARD) {
+		if (app->m_Inst.m_Troll[ix2].order_stat & ORDER_IS_GUARD) {
+			app->m_Scene.plasma.push_back(PLASMA_STRIKE2, 0.5f, center);
+			app->m_Scene.audio.play_effect(sfx::PunchLight);
+		}
+		else {
+			app->m_Scene.plasma.push_back(PLASMA_STRIKE, 0.5f, center);
+			app->m_Scene.audio.play_effect(sfx::Punch);
+		}
 	}
 }
 //

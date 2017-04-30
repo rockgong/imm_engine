@@ -408,14 +408,16 @@ struct sfx
 	static std::string Click;
 	static std::string Empty;
 	static std::string PunchLight;
+	static std::string Breaking;
 };
 //
 std::string sfx::Punch      = "punch";
 std::string sfx::Prepare01  = "magic_spell";
-std::string sfx::Lightning  = "electricity_spark";
+std::string sfx::Lightning  = "magic_lightning";
 std::string sfx::Click      = "click";
 std::string sfx::Empty      = "empty";
 std::string sfx::PunchLight = "punch_light";
+std::string sfx::Breaking   = "breaking";
 //
 }
 #endif

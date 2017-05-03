@@ -19,7 +19,12 @@ struct sfx_select
 {
 	sfx_select();
 	void init(T_app *app_in);
-	void play_effect(const SKILL_SPECIFY &skill, const size_t &ix1, const size_t &ix2, const XMFLOAT3 &center);
+	void play_effect(
+		const SKILL_SPECIFY &skill,
+		const size_t &ix1,
+		const size_t &ix2,
+		const XMFLOAT3 &center,
+		const int &order_stat_dmg = -1);
 	T_app *app;
 };
 //
@@ -37,9 +42,15 @@ void sfx_select<T_app>::init(T_app *app_in)
 }
 //
 template <typename T_app>
-void sfx_select<T_app>::play_effect(const SKILL_SPECIFY &skill, const size_t &ix1, const size_t &ix2, const XMFLOAT3 &center)
+void sfx_select<T_app>::play_effect(
+	const SKILL_SPECIFY &skill,
+	const size_t &ix1,
+	const size_t &ix2,
+	const XMFLOAT3 &center,
+	const int &order_stat_dmg = -1)
 {
 	ix1;
+	ix2;
 	ID3D11ShaderResourceView* resource = nullptr;
 	switch(skill) {
 	case SKILL_SYSTEM_ELIMINATE1:	
@@ -53,7 +64,8 @@ void sfx_select<T_app>::play_effect(const SKILL_SPECIFY &skill, const size_t &ix
 	}
 	//
 	if (skill == SKILL_MELEE_STANDARD) {
-		if (app->m_Inst.m_Troll[ix2].order_stat & ORDER_IS_GUARD) {
+		assert(order_stat_dmg > -1);
+		if (order_stat_dmg & ORDER_IS_GUARD) {
 			app->m_Scene.plasma.push_back(PLASMA_STRIKE2, 0.5f, center);
 			app->m_Scene.audio.play_effect(sfx::PunchLight);
 		}

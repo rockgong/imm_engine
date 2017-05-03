@@ -83,8 +83,6 @@ void status_data::build_attr()
 {
 	attr["black_warrior"].hp_max = 60.0f;
 	attr["black_warrior"].hp = 60.0f;
-	attr["black_warrior"].hp_max = 10.0f;
-	attr["black_warrior"].hp = 10.0f;
 }
 void status_data::assign_attr(ai_points &points, const std::string &inst_name)
 {

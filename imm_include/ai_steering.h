@@ -96,6 +96,21 @@ private:
 	ai_Atk &operator=(const ai_Atk&);
 };
 ////////////////
+// ai_Guard
+////////////////
+////////////////
+struct ai_Guard: public state<steering>
+{
+	static ai_Guard *instance();
+	void enter(steering*);
+	void execute(steering*);
+	void exit(steering*);
+private:
+	ai_Guard() {;}
+	ai_Guard(const ai_Atk&);
+	ai_Guard &operator=(const ai_Atk&);
+};
+////////////////
 // steering
 ////////////////
 ////////////////
@@ -107,6 +122,7 @@ struct steering
 	void change_state(state<steering> *new_state);
 	void revert_previous_state();
 	bool is_out_of_control();
+	void count_down_reset();
 	std::string &act_move();
 	state<steering> *current_state;
 	state<steering> *previous_state;
@@ -166,6 +182,11 @@ void steering::change_state(state<steering> *new_state)
 void steering::revert_previous_state()
 {
 	change_state(previous_state);
+}
+//
+void steering::count_down_reset()
+{
+	count_down = -1.0f;
 }
 //
 }

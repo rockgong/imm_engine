@@ -52,16 +52,17 @@ void pose_Idle::execute(troll *tro)
 			PTR->m_Inst.m_Stat[tro->index].set_switch_current_ClipName(tro->act.Idle(), 5);
 		}
 	}
+	// ORDER_DMG first
+	if (tro->order & ORDER_DMG) {
+		tro->change_state_execute(pose_Damage::instance());
+		return;
+	}
 	if (tro->order & ORDER_JUMP) {
 		tro->change_state_execute(pose_Jump::instance());
 		return;
 	}
 	if (tro->order & ORDER_ATK_X || tro->order & ORDER_ATK_Y) {
 		tro->change_state_execute(pose_Atk::instance());
-		return;
-	}
-	if (tro->order & ORDER_DMG) {
-		tro->change_state_execute(pose_Damage::instance());
 		return;
 	}
 	if (tro->order & ORDER_GUARD) {
@@ -294,6 +295,14 @@ void pose_Jump::execute(troll *tro)
 		if (tro->previous_state == pose_Idle::instance()) tro->A.cd_Jump = tro->A.frame_JumpLand;
 		else tro->A.cd_Jump = 0.1f;
 	}
+	//
+	if (!tro->is_ON_AIR && is_on_land && tro->A.cd_Jump > TIME_59_SECONDS) {
+		tro->A.cd_Jump += PTR->m_Timer.delta_time();
+		// no jump happen
+		if (tro->A.cd_Jump > TIME_1_MINITE + (FPS60_1DIV*5.0f)) {
+			tro->revert_previous_state();
+		}
+	}
 	if (!tro->is_ON_AIR && is_on_land && tro->A.cd_Jump < TIME_59_SECONDS) {
 		if (tro->A.cd_Jump > 0.0f) {
 			tro->A.cd_Jump -= PTR->m_Timer.delta_time();
@@ -328,6 +337,11 @@ void pose_Atk::enter(troll *tro)
 //
 void pose_Atk::execute(troll *tro)
 {
+	
+	if (tro->order & ORDER_DMG) {
+		tro->change_state_execute(pose_Damage::instance());
+		return;
+	}
 	if (tro->order & ORDER_ATK_X) {
 		tro->order = ORDER_NONE;
 		PTR->m_Control.atk.execute(tro->index, 'A');
@@ -341,10 +355,6 @@ void pose_Atk::execute(troll *tro)
 	if (tro->order & ORDER_IDLE) {
 		PTR->m_Inst.m_Stat[tro->index].set_sequence_ClipName(tro->act.Engage());
 		tro->change_state(pose_Idle::instance());
-		return;
-	}
-	if (tro->order & ORDER_DMG) {
-		tro->change_state_execute(pose_Damage::instance());
 		return;
 	}
 }
@@ -365,6 +375,17 @@ pose_Damage *pose_Damage::instance()
 //
 void pose_Damage::enter(troll *tro)
 {
+	if (tro->order_stat & ORDER_IS_GUARD) {
+		if (tro->previous_state != pose_Idle::instance()) {
+			tro->order_stat &= ~ORDER_IS_GUARD;
+		}
+	}
+	//
+	for (auto &damage_ix: tro->guard_inform_damage) {
+		PTR->m_Control.atk.damage[damage_ix].order_stat_dmg = tro->order_stat;
+	}
+	tro->guard_inform_damage.clear();
+	//
 	if (tro->order & ORDER_DMG2) {
 		PTR->m_Inst.m_Stat[tro->index].check_set_ClipName(tro->act.Damage2(), true);
 		tro->A.cd_Damage = tro->A.frame_Damage2;

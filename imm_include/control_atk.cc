@@ -129,7 +129,6 @@ void skill_data::update(const float &dt, skill_para &pa)
 			if (frame_turn[pa.skill_ix-1]-pa.count_down > FPS_MIN_REQ_1DIV) {
 				return;
 			}
-			
 			if (!is_required_ap(pa)) {
 				return;
 			}
@@ -155,7 +154,9 @@ SKILL_TYPE skill_data::get_skill_type(const skill_para &pa)
 damage_data::damage_data():
 	ix_atk(0),
 	ix_dmg(0),
+	index(0),
 	skill_ix(-2),
+	order_stat_dmg(-1),
 	count_down(-1.0f),
 	delay(-1.0f),
 	is_calculated(true),
@@ -200,14 +201,14 @@ void damage_data::update_melee(const float &dt)
 	}
 	if (is_delay) {
 		delay -= dt;
-		if (delay < 0.0f) {
+		if (delay < 0.0f && order_stat_dmg > -1) {
 			assert(box_center);
 			//hit postion roughly
 			XMFLOAT3 box = *box_center;
 			XMFLOAT3 center = PTR->m_Inst.m_BoundW.center(ix_dmg);
 			center.y += (box.y-center.y)*0.8f;
-			PTR->m_SfxSelect.play_effect(specify, ix_atk, ix_dmg, center);
-			PTR->m_AiAttr.calc_skill_melee_delay(specify, ix_atk, ix_dmg);
+			PTR->m_SfxSelect.play_effect(specify, ix_atk, ix_dmg, center, order_stat_dmg);
+			PTR->m_AiAttr.calc_skill_melee_delay(specify, ix_atk, ix_dmg, order_stat_dmg);
 			is_delay = false;
 		}
 	}
@@ -249,6 +250,8 @@ void damage_data::stamp()
 		is_calculated = false;
 		PTR->m_Inst.m_Steering[ix_atk].attack.push_back(ix_dmg);
 		PTR->m_Inst.m_Steering[ix_dmg].damage.push_back(ix_atk);
+		order_stat_dmg = -1;
+		PTR->m_Inst.m_Troll[ix_dmg].guard_inform_damage.push_back(index);
 	}
 }
 ////////////////
@@ -351,6 +354,7 @@ void control_atk<T_app>::cause_damage(
 		damage[index].skill_ix = para_ski[inst_ix_atk].current_ix;
 		damage[index].box_center = &box_center;
 		damage[index].specify = specify;
+		damage[index].index = index;
 	}
 	damage[index].stamp();
 	hits[inst_ix_atk].insert(inst_ix_dmg);

@@ -184,9 +184,16 @@ struct ai_attr
 	void rebuild_troll();
 	void update(const float &dt);
 	void update_regenerate();
-	void calc_skill_melee_immediately(const SKILL_SPECIFY &specify, const size_t &ix_atk, const size_t &ix_dmg);
+	void calc_skill_melee_immediately(
+		const SKILL_SPECIFY &specify,
+		const size_t &ix_atk,
+		const size_t &ix_dmg);
 	void calc_skill_magic_delay(const SKILL_SPECIFY &specify, const size_t &ix_atk, const size_t &ix_dmg);
-	void calc_skill_melee_delay(const SKILL_SPECIFY &specify, const size_t &ix_atk, const size_t &ix_dmg);
+	void calc_skill_melee_delay(
+		const SKILL_SPECIFY &specify,
+		const size_t &ix_atk,
+		const size_t &ix_dmg,
+		const int &order_stat_dmg);
 	bool is_required_ap(const SKILL_SPECIFY &specify, const size_t &ix);
 	void should_be_destroyed(const size_t &ix);
 	T_app *app;
@@ -281,7 +288,10 @@ void ai_attr<T_app>::update_regenerate()
 }
 //
 template <typename T_app>
-void ai_attr<T_app>::calc_skill_melee_immediately(const SKILL_SPECIFY &specify, const size_t &ix_atk, const size_t &ix_dmg)
+void ai_attr<T_app>::calc_skill_melee_immediately(
+	const SKILL_SPECIFY &specify,
+	const size_t &ix_atk,
+	const size_t &ix_dmg)
 {
 	specify;
 	app->m_Inst.m_Troll[ix_dmg].order |= ORDER_DMG;
@@ -308,14 +318,21 @@ void ai_attr<T_app>::calc_skill_magic_delay(const SKILL_SPECIFY &specify, const 
 }
 //
 template <typename T_app>
-void ai_attr<T_app>::calc_skill_melee_delay(const SKILL_SPECIFY &specify, const size_t &ix_atk, const size_t &ix_dmg)
+void ai_attr<T_app>::calc_skill_melee_delay(
+	const SKILL_SPECIFY &specify,
+	const size_t &ix_atk,
+	const size_t &ix_dmg,
+	const int &order_stat_dmg)
 {
 	ix_atk;
 	switch (specify) {
 	case SKILL_MELEE_STANDARD:
-		points[ix_dmg].hp -= 3.0f;
+		assert(order_stat_dmg > -1);
+		if (!(order_stat_dmg & ORDER_IS_GUARD)) {
+			points[ix_dmg].hp -= 3.0f;
+		}
 		if (points[ix_dmg].hp < 0.0f) {
-			points[ix_dmg].hp = points[ix_dmg].hp_max;
+			points[ix_dmg].hp = 0.0f;
 			should_be_destroyed(ix_dmg);
 		}
 		break;

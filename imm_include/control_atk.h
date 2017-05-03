@@ -96,7 +96,9 @@ struct damage_data
 	void stamp();
 	size_t ix_atk;
 	size_t ix_dmg;
+	int index;
 	int skill_ix;
+	int order_stat_dmg;
 	float count_down;
 	float delay;
 	bool is_calculated;

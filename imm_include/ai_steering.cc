@@ -121,7 +121,7 @@ ai_Seek *ai_Seek::instance()
 //
 void ai_Seek::enter(steering *ste)
 {
-	ste;
+	ste->count_down_reset();
 }
 //
 void ai_Seek::execute(steering *ste)
@@ -189,7 +189,10 @@ void ai_Atk::execute(steering *ste)
 		return;
 	}
 	else {
-		PTR->m_Inst.m_Troll[ste->index].order |= ORDER_ATK_X;
+		int casual = rand() % 100;
+		if (casual < 33) PTR->m_Inst.m_Troll[ste->index].order |= ORDER_ATK_X;
+		if (casual > 32 && casual < 66) PTR->m_Inst.m_Troll[ste->index].order |= ORDER_ATK_Y;
+		if (casual > 65) ste->change_state(ai_Guard::instance());
 		return;
 	}
 }
@@ -197,6 +200,38 @@ void ai_Atk::execute(steering *ste)
 void ai_Atk::exit(steering *ste)
 {
 	ste;
+}
+////////////////
+// ai_Guard
+////////////////
+////////////////
+ai_Guard *ai_Guard::instance()
+{
+	static ai_Guard instance;
+	return &instance;
+}
+//
+void ai_Guard::enter(steering *ste)
+{
+	PTR->m_Inst.m_Troll[ste->index].order |= ORDER_GUARD;
+	int casual = rand()%3;
+	ste->count_down = static_cast<float>(casual)+0.5f;
+}
+//
+void ai_Guard::execute(steering *ste)
+{
+	if (ste->count_down > 0.0f) {
+		ste->count_down -= AI_DELTA_TIME_PHY_SLOW;
+	}
+	else {
+		ste->change_state(ai_Atk::instance());
+	}
+	PTR->m_Inst.m_Troll[ste->index].order |= ORDER_GUARD;
+}
+//
+void ai_Guard::exit(steering *ste)
+{
+	PTR->m_Inst.m_Troll[ste->index].order |= ORDER_GUARD_NO;
 }
 //
 }

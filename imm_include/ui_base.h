@@ -429,7 +429,7 @@ void ui_base<T_app>::group_active(const std::string &name, const bool &is_act, c
 template <typename T_app>
 void ui_base<T_app>::pad_loop_button(const bool &is_down, const std::string &select_none = "")
 {
-	m_App->m_Scene.audio.play_effect_interval(m_ClickSound, m_App->m_Timer.total_time());
+	m_App->m_Scene.audio.play_effect(m_ClickSound);
 	// select none
 	if (select_none != "") {
 		assert(m_MapButton[select_none].size() > 0);
@@ -507,7 +507,7 @@ bool ui_base<T_app>::apply_ix(int &index, const bool &is_like_pad = false)
 {
 	if (index != -1) {
 		if (define_apply_ix_if(index)) {
-			m_App->m_Scene.audio.play_effect_interval(m_ClickSound, m_App->m_Timer.total_time());
+			m_App->m_Scene.audio.play_effect(m_ClickSound);
 			// no change m_ClickIxPad and m_ClickIxMouse value in define_ functions
 			// let pad select first button immediately from another group apply, keep m_ClickIxPad
 			// otherwise m_ClickIxPad will be clean by apply, the first selected buttom will be invalid

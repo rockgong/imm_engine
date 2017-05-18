@@ -251,7 +251,7 @@ action_data::action_data():
 	velocity_Jump(35.0f),
 	speed_Walk(4.5f),
 	speed_Run(13.5f),
-	speed_Roll(30.0f),
+	speed_Roll(20.0f),
 	frame_Damage(10.0f*FRAME_RATE_1DIV),
 	frame_Damage2(12.0f*FRAME_RATE_1DIV),
 	frame_DownCollapse(20.0f*FRAME_RATE_1DIV),

@@ -402,22 +402,22 @@ effect::effect(ID3D11Device *device, const std::wstring &filename):
 ////////////////
 struct sfx
 {
-	static std::string Punch;
+	static std::string Attack;
 	static std::string Prepare01;
 	static std::string Lightning;
 	static std::string Click;
 	static std::string Empty;
-	static std::string PunchLight;
+	static std::string AttackGuard;
 	static std::string Breaking;
 };
 //
-std::string sfx::Punch      = "punch";
-std::string sfx::Prepare01  = "magic_spell";
-std::string sfx::Lightning  = "magic_lightning";
-std::string sfx::Click      = "click";
-std::string sfx::Empty      = "empty";
-std::string sfx::PunchLight = "punch_light";
-std::string sfx::Breaking   = "breaking";
+std::string sfx::Attack      = "attack";
+std::string sfx::Prepare01   = "magic_spell";
+std::string sfx::Lightning   = "magic_lightning";
+std::string sfx::Click       = "click";
+std::string sfx::Empty       = "empty";
+std::string sfx::AttackGuard = "attack_guard";
+std::string sfx::Breaking    = "breaking";
 //
 }
 #endif

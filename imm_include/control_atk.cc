@@ -232,7 +232,7 @@ void damage_data::update_magic(const float &dt)
 					PTR->m_Control.atk.para_ski[ix_atk].is_adjust_dir = true;
 				}
 			}
-			PTR->m_Scene.audio.play_effect(sfx::Punch);
+			PTR->m_Scene.audio.play_effect(sfx::Attack);
 			PTR->m_AiAttr.calc_skill_magic_delay(specify, ix_atk, ix_dmg);
 			is_delay = false;
 		}

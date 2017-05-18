@@ -67,11 +67,11 @@ void sfx_select<T_app>::play_effect(
 		assert(order_stat_dmg > -1);
 		if (order_stat_dmg & ORDER_IS_GUARD) {
 			app->m_Scene.plasma.push_back(PLASMA_STRIKE2, 0.5f, center);
-			app->m_Scene.audio.play_effect(sfx::PunchLight);
+			app->m_Scene.audio.play_effect(sfx::AttackGuard);
 		}
 		else {
 			app->m_Scene.plasma.push_back(PLASMA_STRIKE, 0.5f, center);
-			app->m_Scene.audio.play_effect(sfx::Punch);
+			app->m_Scene.audio.play_effect(sfx::Attack);
 		}
 	}
 }

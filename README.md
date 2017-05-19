@@ -30,7 +30,7 @@ Disadvantage List:
 Compile Environment:
 --------------------
 Win 10  
-Visual Studio 2015 (require Common Tools for Visual C++ 2015)  
+Visual Studio 2017 (require Desktop development for C++)  
 Windows SDK for Windows 10  
 DirectX SDK (June 2010)  
 
@@ -38,7 +38,7 @@ Runtime Environment:
 --------------------
 Win 7.1 / Win 8.x / Win 10  
 DirectX End-User Runtimes (June 2010)  
-Visual C++ Redistributable for Visual Studio 2015  
+Visual C++ Redistributable for Visual Studio 2017  
 Update KB2670838 (Windows 7.1 situation)  
 DirectX 11 capable GPU  
 1024X768 minimum display resolution  
@@ -49,10 +49,10 @@ Dependent .Lib Files for compiling:
 Those files should be in VC++ Library Directories, 
 notice corresponding x64/x86, Debug/Release version.
 The .lib files you can get from each corresponding project.
-* **DirectXTK.lib**: [DirectX Tool Kit](https://github.com/Microsoft/DirectXTK) (April 26, 2016)
-* **DirectXTKAudioDX.lib**: [DirectX Tool Kit](https://github.com/Microsoft/DirectXTK)  (April 26, 2016)
-* **Effects11.lib**: [Effects for Direct3D 11](https://github.com/Microsoft/FX11) (April 26, 2016 (11.16))
-* **lua.lib**: [Lua](https://www.lua.org/) 5.3.2
+* **DirectXTK.lib**: [DirectX Tool Kit](https://github.com/Microsoft/DirectXTK) (April 24, 2017)
+* **DirectXTKAudioDX.lib**: [DirectX Tool Kit](https://github.com/Microsoft/DirectXTK)  (April 24, 2017)
+* **Effects11.lib**: [Effects for Direct3D 11](https://github.com/Microsoft/FX11) (March 10, 2017), Debug version please rename.
+* **lua.lib**: [Lua](https://www.lua.org/) 5.3.4
 * **XInput1_3.lib**: Its orgin name is XInput.lib, from 
 [DirectX SDK (June 2010)](https://www.microsoft.com/en-us/download/details.aspx?id=6812)
 * **X3DAudio.lib**: [DirectX SDK (June 2010)](https://www.microsoft.com/en-us/download/details.aspx?id=6812)

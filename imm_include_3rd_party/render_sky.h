@@ -76,7 +76,9 @@ sky::sky(ID3D11Device* device, const std::wstring& cubemap_filename, float sky_s
 	ibd.StructureByteStride = 0;
 	ibd.MiscFlags           = 0;
 	std::vector<USHORT> indices16;
-	indices16.assign(sphere.indices.begin(), sphere.indices.end());
+	for (auto &indice: sphere.indices) {
+		indices16.push_back(static_cast<USHORT>(indice));
+	}
 	D3D11_SUBRESOURCE_DATA iinit_data;
 	iinit_data.pSysMem = &indices16[0];
 	HR(device->CreateBuffer(&ibd, &iinit_data, &m_IB));

@@ -8,6 +8,7 @@
 #ifndef AI_ATTRIBUTE_H
 #define AI_ATTRIBUTE_H
 #include "phy_magic.h"
+#include "control_atk.h"
 #include <map>
 namespace imm
 {
@@ -26,6 +27,7 @@ struct ai_points
 	float mgc;
 	float def;
 	float res;
+	float poise;
 };
 //
 ai_points::ai_points():
@@ -36,7 +38,8 @@ ai_points::ai_points():
 	str(5.0f),
 	mgc(5.0f),
 	def(5.0f),
-	res(5.0f)
+	res(5.0f),
+	poise(5.0f)
 {
 	;
 }
@@ -193,8 +196,10 @@ struct ai_attr
 		const SKILL_SPECIFY &specify,
 		const size_t &ix_atk,
 		const size_t &ix_dmg,
-		const int &order_stat_dmg);
+		const int &order_stat_dmg,
+		const float &poise);
 	bool is_required_ap(const SKILL_SPECIFY &specify, const size_t &ix);
+	bool is_poise_greater_than_zero(const size_t &ix);
 	void should_be_destroyed(const size_t &ix);
 	T_app *app;
 	float delta_time;
@@ -322,7 +327,8 @@ void ai_attr<T_app>::calc_skill_melee_delay(
 	const SKILL_SPECIFY &specify,
 	const size_t &ix_atk,
 	const size_t &ix_dmg,
-	const int &order_stat_dmg)
+	const int &order_stat_dmg,
+	const float &poise)
 {
 	ix_atk;
 	switch (specify) {
@@ -330,6 +336,7 @@ void ai_attr<T_app>::calc_skill_melee_delay(
 		assert(order_stat_dmg > -1);
 		if (!(order_stat_dmg & ORDER_IS_GUARD)) {
 			points[ix_dmg].hp -= 3.0f;
+			points[ix_dmg].poise -= poise;
 		}
 		if (points[ix_dmg].hp < 0.0f) {
 			points[ix_dmg].hp = 0.0f;
@@ -356,6 +363,13 @@ bool ai_attr<T_app>::is_required_ap(const SKILL_SPECIFY &specify, const size_t &
 		return true;
 		break;
 	}
+}
+//
+template <typename T_app>
+bool ai_attr<T_app>::is_poise_greater_than_zero(const size_t &ix)
+{
+	if (points[ix].poise > 0) return true;
+	return false;
 }
 //
 template <typename T_app>

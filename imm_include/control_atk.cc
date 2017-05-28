@@ -162,6 +162,7 @@ damage_data::damage_data():
 	is_calculated(true),
 	is_delay(false),
 	box_center(nullptr),
+	m_skill_data(nullptr),
 	specify(SKILL_MELEE_STANDARD)
 {
 	;
@@ -187,11 +188,11 @@ void damage_data::update_melee(const float &dt)
 	if (!is_calculated) {
 		PTR->m_AiAttr.calc_skill_melee_immediately(specify, ix_atk, ix_dmg);
 		math::set_inst_speed(ix_dmg, 0.0f);
-		if (!PTR->m_Control.atk.para_ski[ix_atk].is_adjust_dir) {
+		if (!PTR->m_Control.atk.ski_para[ix_atk].is_adjust_dir) {
 			if (PTR->m_Inst.m_Probe.intersects_oblong(ix_atk, ix_dmg)) {
 				PTR->m_Inst.m_Troll[ix_atk].focus = static_cast<int>(ix_dmg);
 				math::set_face_to_face(ix_atk, ix_dmg);
-				PTR->m_Control.atk.para_ski[ix_atk].is_adjust_dir = true;
+				PTR->m_Control.atk.ski_para[ix_atk].is_adjust_dir = true;
 			}
 		}
 		//
@@ -208,7 +209,13 @@ void damage_data::update_melee(const float &dt)
 			XMFLOAT3 center = PTR->m_Inst.m_BoundW.center(ix_dmg);
 			center.y += (box.y-center.y)*0.8f;
 			PTR->m_SfxSelect.play_effect(specify, ix_atk, ix_dmg, center, order_stat_dmg);
-			PTR->m_AiAttr.calc_skill_melee_delay(specify, ix_atk, ix_dmg, order_stat_dmg);
+			PTR->m_AiAttr.calc_skill_melee_delay(
+				specify,
+				ix_atk,
+				ix_dmg,
+				order_stat_dmg,
+				m_skill_data->poise[skill_ix]);
+			//
 			is_delay = false;
 		}
 	}
@@ -225,11 +232,11 @@ void damage_data::update_magic(const float &dt)
 		delay -= dt;
 		if (delay < 0.0f) {
 			math::set_inst_speed(ix_dmg, 0.0f);
-			if (!PTR->m_Control.atk.para_ski[ix_atk].is_adjust_dir) {
+			if (!PTR->m_Control.atk.ski_para[ix_atk].is_adjust_dir) {
 				if (PTR->m_Inst.m_Probe.intersects_oblong(ix_atk, ix_dmg)) {
 					PTR->m_Inst.m_Troll[ix_atk].focus = static_cast<int>(ix_dmg);
 					math::set_face_to_face(ix_atk, ix_dmg);
-					PTR->m_Control.atk.para_ski[ix_atk].is_adjust_dir = true;
+					PTR->m_Control.atk.ski_para[ix_atk].is_adjust_dir = true;
 				}
 			}
 			PTR->m_Scene.audio.play_effect(sfx::Attack);
@@ -246,12 +253,12 @@ void damage_data::stamp()
 		return;
 	}
 	else {
-		count_down = PTR->m_Control.atk.para_ski[ix_atk].count_down;
+		count_down = PTR->m_Control.atk.ski_para[ix_atk].count_down;
 		is_calculated = false;
 		PTR->m_Inst.m_Steering[ix_atk].attack.push_back(ix_dmg);
 		PTR->m_Inst.m_Steering[ix_dmg].damage.push_back(ix_atk);
 		order_stat_dmg = -1;
-		PTR->m_Inst.m_Troll[ix_dmg].guard_inform_damage.push_back(index);
+		PTR->m_Inst.m_Troll[ix_dmg].guard_damage_index.push_back(index);
 	}
 }
 ////////////////
@@ -275,9 +282,9 @@ void control_atk<T_app>::init(T_app *app_in)
 	std::vector<std::vector<std::string>> vec2d;
 	l_reader.vec2d_str_from_table("csv_npc_skill", vec2d);
 	for (size_t ix = 1; ix < vec2d.size(); ++ix) {
-		auto d_skill = &data_ski[vec2d[ix][0]];
+		auto d_skill = &ski_data[vec2d[ix][0]];
 		if (!d_skill->chunk.count(vec2d[ix][1][0])) {
-			d_skill->chunk[vec2d[ix][1][0]] = static_cast<int>(data_ski[vec2d[ix][0]].atk.size());
+			d_skill->chunk[vec2d[ix][1][0]] = static_cast<int>(ski_data[vec2d[ix][0]].atk.size());
 		}
 		d_skill->atk.push_back(vec2d[ix][2]);
 		d_skill->frame_end.push_back(std::stof(vec2d[ix][3]) * FRAME_RATE_1DIV);
@@ -307,6 +314,7 @@ void control_atk<T_app>::init(T_app *app_in)
 			d_skill->inst_speed2.emplace_back(speed_list);
 		}
 		d_skill->impulse.push_back(std::stof(vec2d[ix][11]));
+		d_skill->poise.push_back(std::stof(vec2d[ix][12]));
 	}
 }
 //
@@ -319,16 +327,16 @@ void control_atk<T_app>::rebuild_action()
 template <typename T_app>
 void control_atk<T_app>::reset()
 {
-	para_ski.clear();
+	ski_para.clear();
 	damage.clear();
 }
 //
 template <typename T_app>
 void control_atk<T_app>::init_skill_para(const size_t &index_in)
 {
-	para_ski[index_in];
-	para_ski[index_in].model_name = *app->m_Inst.m_Stat[index_in].get_ModelName();
-	para_ski[index_in].inst_ix = index_in;
+	ski_para[index_in];
+	ski_para[index_in].model_name = *app->m_Inst.m_Stat[index_in].get_ModelName();
+	ski_para[index_in].inst_ix = index_in;
 }
 //
 template <typename T_app>
@@ -341,20 +349,33 @@ void control_atk<T_app>::cause_damage(
 	if (is_cannot_be_attacked(inst_ix_dmg)) return;
 	assert(inst_ix_atk < 1000);
 	assert(inst_ix_dmg < 1000);
-	assert(para_ski[inst_ix_atk].current_ix < 100);
-	assert(para_ski[inst_ix_atk].current_ix > -1);
+	assert(ski_para[inst_ix_atk].current_ix < 100);
+	assert(ski_para[inst_ix_atk].current_ix > -1);
 	int index =
-		para_ski[inst_ix_atk].current_ix +
+		ski_para[inst_ix_atk].current_ix +
 		static_cast<int>(inst_ix_atk)*1000 +
 		static_cast<int>(inst_ix_dmg)*1000000;
 	if (!damage.count(index)) {
 		// init
 		damage[index].ix_atk = inst_ix_atk;
 		damage[index].ix_dmg = inst_ix_dmg;
-		damage[index].skill_ix = para_ski[inst_ix_atk].current_ix;
+		damage[index].skill_ix = ski_para[inst_ix_atk].current_ix;
 		damage[index].box_center = &box_center;
 		damage[index].specify = specify;
 		damage[index].index = index;
+		
+		
+		damage[index].m_skill_data = &ski_data[*app->m_Inst.m_Stat[inst_ix_atk].get_ModelName()];
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 	}
 	damage[index].stamp();
 	hits[inst_ix_atk].insert(inst_ix_dmg);
@@ -364,22 +385,22 @@ void control_atk<T_app>::cause_damage(
 template <typename T_app>
 void control_atk<T_app>::execute(const size_t &index_in, const char &symbol)
 {
-	if (!data_ski.count(*app->m_Inst.m_Stat[index_in].get_ModelName())) {
+	if (!ski_data.count(*app->m_Inst.m_Stat[index_in].get_ModelName())) {
 		PTR->m_Inst.m_Troll[index_in].order |= ORDER_IDLE;
 		return;
 	}
-	if (!para_ski.count(index_in)) init_skill_para(index_in);
-	if (para_ski[index_in].skill_ix == -1) para_ski[index_in].symbol = symbol;
-	para_ski[index_in].is_execute = true;
-	para_ski[index_in].is_adjust_dir = false;
-	data_ski[para_ski[index_in].model_name].strike(para_ski[index_in]);
+	if (!ski_para.count(index_in)) init_skill_para(index_in);
+	if (ski_para[index_in].skill_ix == -1) ski_para[index_in].symbol = symbol;
+	ski_para[index_in].is_execute = true;
+	ski_para[index_in].is_adjust_dir = false;
+	ski_data[ski_para[index_in].model_name].strike(ski_para[index_in]);
 }
 //
 template <typename T_app>
 void control_atk<T_app>::update(const float &dt)
 {
-	for (auto &para_it: para_ski) {
-		data_ski[para_it.second.model_name].update(dt, para_it.second);
+	for (auto &para_it: ski_para) {
+		ski_data[para_it.second.model_name].update(dt, para_it.second);
 	}
 	for (auto &dmg: damage) {
 		dmg.second.update(dt);
@@ -389,8 +410,8 @@ void control_atk<T_app>::update(const float &dt)
 template <typename T_app>
 bool control_atk<T_app>::is_execute(const size_t &index_in)
 {
-	if (para_ski.count(index_in)) {
-		if (para_ski[index_in].is_execute) {	
+	if (ski_para.count(index_in)) {
+		if (ski_para[index_in].is_execute) {	
 			return true;
 		}
 	}
@@ -407,12 +428,12 @@ bool control_atk<T_app>::is_cannot_be_attacked(const size_t &damage_ix)
 template <typename T_app>
 float control_atk<T_app>::current_impulse(const size_t &index_in)
 {
-	if (para_ski.count(index_in)) {
-		if (para_ski[index_in].is_execute) {	
-			return data_ski.at(*app->m_Inst.m_Stat[index_in].get_ModelName()).impulse[para_ski[index_in].current_ix];
+	if (ski_para.count(index_in)) {
+		if (ski_para[index_in].is_execute) {	
+			return ski_data.at(*app->m_Inst.m_Stat[index_in].get_ModelName()).impulse[ski_para[index_in].current_ix];
 		}
 	}
-	assert(para_ski.count(index_in));
+	assert(ski_para.count(index_in));
 	return 0.0f;
 }
 //

@@ -81,6 +81,7 @@ public:
 	std::vector<std::vector<std::string>> atk_box;
 	std::vector<std::list<XMFLOAT2>> inst_speed2;
 	std::vector<float> impulse;
+	std::vector<float> poise;
 	std::map<char, int> chunk;
 };
 ////////////////
@@ -104,6 +105,7 @@ struct damage_data
 	bool is_calculated;
 	bool is_delay;
 	const XMFLOAT3 *box_center;
+	const skill_data *m_skill_data;
 	SKILL_SPECIFY specify;
 };
 ////////////////
@@ -129,8 +131,8 @@ struct control_atk
 	bool is_cannot_be_attacked(const size_t &damage_ix);
 	float current_impulse(const size_t &index_in);
 	T_app *app;
-	std::map<std::string, skill_data> data_ski;
-	std::map<size_t, skill_para> para_ski;
+	std::map<std::string, skill_data> ski_data;
+	std::map<size_t, skill_para> ski_para;
 	std::map<int, damage_data> damage;
 	std::map<size_t, std::set<size_t>> hits;
 };

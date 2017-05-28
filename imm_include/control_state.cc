@@ -46,32 +46,37 @@ void pose_Idle::enter(troll *tro)
 void pose_Idle::execute(troll *tro)
 {
 	if (tro->order_stat & ORDER_IS_ENGAGE) {
-		tro->A.cd_Idle -= PTR->m_Timer.delta_time();
-		if (tro->A.cd_Idle < 0.0f) {
+		if (tro->A.cd_Idle > 0.0f) {
+			tro->A.cd_Idle -= PTR->m_Timer.delta_time();
+		}
+		else {
 			tro->order_stat ^= ORDER_IS_ENGAGE;
 			PTR->m_Inst.m_Stat[tro->index].set_switch_current_ClipName(tro->act.Idle(), 5);
 		}
 	}
-	// ORDER_DMG first
+	// ORDER_DMG
 	if (tro->order & ORDER_DMG) {
+		if (PTR->m_AiAttr.is_poise_greater_than_zero(tro->index)) {
+			if (tro->order & ORDER_ATK_X || tro->order & ORDER_ATK_Y) {
+				tro->change_state_execute(pose_Atk::instance());
+				return;
+			}
+		}		
 		tro->change_state_execute(pose_Damage::instance());
 		return;
 	}
-	if (tro->order & ORDER_JUMP) {
-		tro->change_state_execute(pose_Jump::instance());
-		return;
-	}
+	// ORDER_ATK_X ORDER_ATK_Y
 	if (tro->order & ORDER_ATK_X || tro->order & ORDER_ATK_Y) {
 		tro->change_state_execute(pose_Atk::instance());
 		return;
 	}
+	//
+	if (tro->order & ORDER_JUMP) {
+		tro->change_state_execute(pose_Jump::instance());
+		return;
+	}
 	if (tro->order & ORDER_GUARD) {
 		tro->order = ORDER_NONE;
-		tro->A.cd_GuardMin -= PTR->m_Timer.delta_time();
-		if (tro->A.cd_GuardMin > 0.0f) return;
-		if (tro->order_stat & ORDER_IS_GUARD) return;
-		tro->order_stat |= ORDER_IS_GUARD;
-		tro->A.cd_GuardMin = FPS60_1DIV;
 		PTR->m_Inst.m_Stat[tro->index].set_switch_current_ClipName(tro->act.Idle(), 5);
 		return;
 	}
@@ -82,7 +87,6 @@ void pose_Idle::execute(troll *tro)
 		tro->order_stat |= ORDER_IS_ENGAGE;
 		tro->A.cd_Idle = 3.0f;
 		PTR->m_Inst.m_Stat[tro->index].set_switch_current_ClipName(tro->act.Idle(), 5);
-		tro->A.cd_GuardMin = -1.0f;
 		return;
 	}
 	if (tro->order & ORDER_MOVE_HIT) {
@@ -337,18 +341,36 @@ void pose_Atk::enter(troll *tro)
 //
 void pose_Atk::execute(troll *tro)
 {
-	
-	if (tro->order & ORDER_DMG) {
+	auto clear_order_atk = [](int &order_ref) {
+		order_ref &= ~ORDER_ATK_X;
+		order_ref &= ~ORDER_ATK_Y;
+	};
+	if (tro->order & ORDER_DMG_DOWN) {
 		tro->change_state_execute(pose_Damage::instance());
 		return;
 	}
+	if (tro->order & ORDER_DMG) {
+		if (PTR->m_AiAttr.is_poise_greater_than_zero(tro->index)) {
+			// damage but not break state
+			tro->order_stat &= ~ORDER_IS_GUARD;
+			tro->order &= ~ORDER_DMG;
+			for (auto &damage_ix: tro->guard_damage_index) {
+				PTR->m_Control.atk.damage[damage_ix].order_stat_dmg = tro->order_stat;
+			}
+			tro->guard_damage_index.clear();
+		}
+		else {
+			tro->change_state_execute(pose_Damage::instance());
+			return;
+		}
+	}
 	if (tro->order & ORDER_ATK_X) {
-		tro->order = ORDER_NONE;
+		clear_order_atk(tro->order);
 		PTR->m_Control.atk.execute(tro->index, 'A');
 		return;
 	}
 	if (tro->order & ORDER_ATK_Y) {
-		tro->order = ORDER_NONE;
+		clear_order_atk(tro->order);
 		PTR->m_Control.atk.execute(tro->index, 'B');
 		return;
 	}
@@ -375,22 +397,27 @@ pose_Damage *pose_Damage::instance()
 //
 void pose_Damage::enter(troll *tro)
 {
+	auto clear_order_dmg = [](int &order_ref) {
+		order_ref &= ~ORDER_DMG;
+		order_ref &= ~ORDER_DMG2;
+		order_ref &= ~ORDER_DMG_DOWN;
+	};
 	if (tro->order_stat & ORDER_IS_GUARD) {
 		if (tro->previous_state != pose_Idle::instance()) {
 			tro->order_stat &= ~ORDER_IS_GUARD;
 		}
 	}
 	//
-	for (auto &damage_ix: tro->guard_inform_damage) {
+	for (auto &damage_ix: tro->guard_damage_index) {
 		PTR->m_Control.atk.damage[damage_ix].order_stat_dmg = tro->order_stat;
 	}
-	tro->guard_inform_damage.clear();
+	tro->guard_damage_index.clear();
 	//
 	if (tro->order & ORDER_DMG2) {
 		PTR->m_Inst.m_Stat[tro->index].check_set_ClipName(tro->act.Damage2(), true);
 		tro->A.cd_Damage = tro->A.frame_Damage2;
 		tro->is_DOWN = true;
-		tro->order = ORDER_NONE;
+		clear_order_dmg(tro->order);
 		return;
 	}
 	if (tro->order & ORDER_DMG_DOWN) {
@@ -398,7 +425,7 @@ void pose_Damage::enter(troll *tro)
 		tro->A.cd_Damage = tro->A.frame_Damage/tro->A.scale_time_DamageDown;
 		tro->is_DOWN = true;
 		tro->order_stat |= ORDER_IS_DESTROYED;
-		tro->order = ORDER_NONE;
+		clear_order_dmg(tro->order);
 		return;
 	}
 	if (tro->order_stat & ORDER_IS_GUARD) {
@@ -409,7 +436,7 @@ void pose_Damage::enter(troll *tro)
 		PTR->m_Inst.m_Stat[tro->index].check_set_ClipName(tro->act.Damage(), true);
 		tro->A.cd_Damage = tro->A.frame_Damage;
 	}
-	tro->order = ORDER_NONE;
+	clear_order_dmg(tro->order);
 }
 //
 void pose_Damage::execute(troll *tro)

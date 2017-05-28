@@ -148,7 +148,7 @@ void instance_mgr<T_app>::reload()
 	m_Troll.resize(m_Stat.size());
 	for (size_t ix = 0; ix != m_Troll.size(); ++ix) {
 		m_Troll[ix].index = ix;
-		if (m_App->m_Control.atk.data_ski.count(*m_Stat[ix].get_ModelName())) {
+		if (m_App->m_Control.atk.ski_data.count(*m_Stat[ix].get_ModelName())) {
 			m_Stat[ix].property |= INST_IS_CONTROLLABLE;
 			m_Steering[ix].init(ix);
 		}

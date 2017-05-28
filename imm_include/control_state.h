@@ -295,7 +295,7 @@ struct troll
 	bool is_ON_AIR;
 	bool is_DOWN;
 	bool is_GET_UP;
-	std::vector<int> guard_inform_damage;
+	std::vector<int> guard_damage_index;
 	action_data A;
 	act_str act;
 };
@@ -311,7 +311,7 @@ troll::troll():
 	is_ON_AIR(false),
 	is_DOWN(false),
 	is_GET_UP(false),
-	guard_inform_damage(),
+	guard_damage_index(),
 	A(),
 	act(order_stat)
 {

@@ -96,10 +96,12 @@ void phy_position<T_app>::update(
 		prop.dt -= FPS60_1DIV;
 		is_fps60_dt = true;
 	}
-	if (prop.absolute_alt > 0.0f) prop.absolute_alt -= dt;
 	if (is_fps60_dt) {
 		float decay = 0.5f;
-		if (prop.absolute_alt > 0.0f) decay = 1.0f;
+		if (prop.absolute_alt > 0) {
+			decay = 1.0f;
+			--prop.absolute_alt;
+		}
 		prop.vel_absolute.x *= decay;
 		prop.vel_absolute.y *= decay;
 		prop.vel_absolute.z *= decay;
@@ -377,8 +379,7 @@ void phy_position<T_app>::attack_impulse(
 	vel_absolute = XMVectorAdd(vel_absolute, Hit_to_B);
 	XMStoreFloat3(&prop_B.vel_absolute, vel_absolute);
 	if (impulse_scale > impulse_step) {
-		float f_time = impulse_scale - impulse_step;
-		prop_B.absolute_alt = f_time*FRAME_RATE_1DIV;
+		prop_B.absolute_alt = static_cast<int>(impulse_scale);
 	}
 	return;
 }

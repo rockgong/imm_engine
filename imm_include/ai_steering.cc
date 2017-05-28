@@ -167,9 +167,6 @@ void ai_Atk::enter(steering *ste)
 //
 void ai_Atk::execute(steering *ste)
 {
-	if (PTR->m_Inst.m_Troll[ste->index].current_state == pose_Damage::instance()) {
-		return;
-	}
 	// wait pose_Idle
 	if (PTR->m_Inst.m_Troll[ste->index].current_state == pose_Move::instance()) {
 		return;
@@ -190,9 +187,9 @@ void ai_Atk::execute(steering *ste)
 	}
 	else {
 		int casual = rand() % 100;
-		if (casual < 33) PTR->m_Inst.m_Troll[ste->index].order |= ORDER_ATK_X;
-		if (casual > 32 && casual < 66) PTR->m_Inst.m_Troll[ste->index].order |= ORDER_ATK_Y;
-		if (casual > 65) ste->change_state(ai_Guard::instance());
+		if (casual < 40) PTR->m_Inst.m_Troll[ste->index].order |= ORDER_ATK_X;
+		if (casual > 39 && casual < 66) PTR->m_Inst.m_Troll[ste->index].order |= ORDER_ATK_Y;
+		if (casual > 80) ste->change_state(ai_Guard::instance());
 		return;
 	}
 }

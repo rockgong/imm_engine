@@ -224,6 +224,7 @@ void ai_Guard::execute(steering *ste)
 		ste->change_state(ai_Atk::instance());
 	}
 	PTR->m_Inst.m_Troll[ste->index].order |= ORDER_GUARD;
+	PTR->m_Inst.m_Troll[ste->index].order_stat |= ORDER_IS_GUARD;
 }
 //
 void ai_Guard::exit(steering *ste)

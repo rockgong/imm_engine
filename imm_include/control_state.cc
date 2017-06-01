@@ -76,7 +76,7 @@ void pose_Idle::execute(troll *tro)
 		return;
 	}
 	if (tro->order & ORDER_GUARD) {
-		tro->order = ORDER_NONE;
+		tro->order ^= ORDER_GUARD;
 		PTR->m_Inst.m_Stat[tro->index].set_switch_current_ClipName(tro->act.Idle(), 5);
 		return;
 	}
@@ -372,6 +372,9 @@ void pose_Atk::execute(troll *tro)
 	if (tro->order & ORDER_ATK_Y) {
 		clear_order_atk(tro->order);
 		PTR->m_Control.atk.execute(tro->index, 'B');
+		return;
+	}
+	if (PTR->m_Control.atk.is_execute(tro->index)) {
 		return;
 	}
 	if (tro->order & ORDER_IDLE) {

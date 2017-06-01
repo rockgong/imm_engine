@@ -102,9 +102,11 @@ void skill_data::update(const float &dt, skill_para &pa)
 	if (pa.count_down > 0.0f) pa.count_down -= dt;
 	//
 	if (!pa.is_judge) {
-		if (frame_end[pa.current_ix] - pa.count_down > judge_start[pa.current_ix]) {
-			PTR->m_Hit.set_active_box(pa.inst_ix, atk_box[pa.current_ix], true);
-			pa.is_judge = true;
+		if (frame_end[pa.current_ix] - pa.count_down < judge_end[pa.current_ix]) {
+			if (frame_end[pa.current_ix] - pa.count_down > judge_start[pa.current_ix]) {
+				PTR->m_Hit.set_active_box(pa.inst_ix, atk_box[pa.current_ix], true);
+				pa.is_judge = true;
+			}
 		}
 	}
 	if (pa.is_judge) {
@@ -363,19 +365,7 @@ void control_atk<T_app>::cause_damage(
 		damage[index].box_center = &box_center;
 		damage[index].specify = specify;
 		damage[index].index = index;
-		
-		
 		damage[index].m_skill_data = &ski_data[*app->m_Inst.m_Stat[inst_ix_atk].get_ModelName()];
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
 	}
 	damage[index].stamp();
 	hits[inst_ix_atk].insert(inst_ix_dmg);

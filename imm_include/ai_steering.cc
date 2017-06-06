@@ -211,6 +211,7 @@ ai_Guard *ai_Guard::instance()
 void ai_Guard::enter(steering *ste)
 {
 	PTR->m_Inst.m_Troll[ste->index].order |= ORDER_GUARD;
+	PTR->m_Inst.m_Troll[ste->index].order_stat |= ORDER_IS_GUARD;
 	int casual = rand()%3;
 	ste->count_down = static_cast<float>(casual)+0.5f;
 }

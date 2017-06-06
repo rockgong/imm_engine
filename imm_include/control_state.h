@@ -209,6 +209,7 @@ struct act_str
 	std::string Engage();
 	std::string Damage();
 	std::string Damage2();
+	std::string DamageStr1();
 	std::string DownCollapse();
 	std::string Roll();
 	std::string WalkRev();

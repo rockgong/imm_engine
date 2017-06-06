@@ -132,7 +132,7 @@ std::string *instance_stat::get_ClipName()
 	switch(type) {
 	case MODEL_SKINNED: return &(((skinned_model_instance*)p_inst)->clip_name);
 	}
-	return &IMM_PATH["text"];
+	return &EMPTY_STRING;
 }
 //
 PHY_BOUND_TYPE instance_stat::get_BoundType()

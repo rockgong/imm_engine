@@ -21,25 +21,27 @@ struct ai_points
 	ai_points();
 	float hp_max;
 	float ap_max;
+	float poise_max;
 	float hp;
 	float ap;
+	float poise;
 	float str;
 	float mgc;
 	float def;
-	float res;
-	float poise;
+	float res;	
 };
 //
 ai_points::ai_points():
 	hp_max(20.0f),
 	ap_max(20.0f),
+	poise_max(5.0f),
 	hp(20.0f),
 	ap(20.0f),
+	poise(1.0f),
 	str(5.0f),
 	mgc(5.0f),
 	def(5.0f),
-	res(5.0f),
-	poise(5.0f)
+	res(5.0f)	
 {
 	;
 }
@@ -289,6 +291,10 @@ void ai_attr<T_app>::update_regenerate()
 		if (PTR->m_Control.atk.is_execute(poi.first)) continue;
 		assert(poi.second.ap > 0.0f);
 		poi.second.ap += poi.second.ap_max*0.2f*AI_DELTA_TIME_LOGIC;
+		//
+		if (poi.second.poise < poi.second.poise_max) {
+			poi.second.poise += AI_DELTA_TIME_LOGIC;
+		}
 	}
 }
 //

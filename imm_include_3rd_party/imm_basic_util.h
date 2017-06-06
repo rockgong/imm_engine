@@ -90,6 +90,7 @@ static const float AI_DELTA_TIME_PHY_SLOW = 0.1f;
 static const float ATK_IMPULSE_DMG2 = 5.0f;
 static const std::wstring SCENE_FIRST = L"_00";
 static const std::wstring SCENE_SECOND = L"_01";
+static std::string EMPTY_STRING = "";
 ////////////////
 // str, wstr
 ////////////////

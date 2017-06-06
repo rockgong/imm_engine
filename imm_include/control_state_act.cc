@@ -17,7 +17,7 @@ act_str::act_str(int &order_stat)
 //
 std::string act_str::Idle()
 {
-	if (*p_order_s & ORDER_IS_GUARD) return "Guard";
+	if (*p_order_s & ORDER_IS_GUARD) return Guard();
 	if (*p_order_s & ORDER_IS_ENGAGE) return "Engage";
 	return "Idle";
 }
@@ -53,6 +53,11 @@ std::string act_str::Damage2()
 {
 	if (*p_order_s & ORDER_IS_GUARD) return "GuardDamage";
 	return "Damage2";
+}
+//
+std::string act_str::DamageStr1()
+{
+	return "Damage";
 }
 //
 std::string act_str::DownCollapse()

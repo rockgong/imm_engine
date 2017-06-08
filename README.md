@@ -1,26 +1,17 @@
-immature engine
-===============
-C++  
-immature engine  
+Dragon's Ingot
+==============
+Dragon's Ingot source code, immature engine.
 
 Introduction:
 -------------
-This engine is designing for the action game [Dragon's Ingot](http://dragonsingot.com/).
-All features tend to be minimized. 
-The fundamental 3D rendering technique is derived from 
-the [DirectX 11 book](http://www.amazon.com/dp/1936420228/) by Frank Luna.
-**It is almost impossible to use due to weak development scale and absence of visualization scene editor.**
-**Strongly recommend Unity3D or Unreal Engine but not this engine.**
-
-Current State:
----------------
+[Dragon's Ingot](http://dragonsingot.com/) is an indie 3D action game. The game is in early development.
 This open source project is just a technic showcase.
-It is not guarantee to be the latest version compared with Dragon's Ingot.
 
-Disadvantage List:
-------------------
-* The disavantage list is the bad features that will not change even in the future.
-* [cl.exe](https://msdn.microsoft.com/en-us/library/9s7c9wdw.aspx) Command-Line Build.
+Features:
+---------
+* Command-Line Build ([cl.exe](https://msdn.microsoft.com/en-us/library/9s7c9wdw.aspx)).
+* The fundamental 3D rendering technique is derived from 
+the [DirectX 11 book](http://www.amazon.com/dp/1936420228/) by Frank Luna.
 * No visualization scene editor.
 * The platform only supports Microsoft Windows.
 * Little document support.

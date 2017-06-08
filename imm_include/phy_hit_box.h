@@ -204,8 +204,16 @@ void phy_hit_arrange<T_app>::rebuild_info_from_attachment()
 	std::vector<inst_attachment> (*att) = &app->m_Inst.m_Adapter.attach;
 	for (size_t ix = 0; ix != (*att).size(); ++ix) {
 		if ((*att)[ix].is_enable) {
+			// attachment's name may be different form ski_data's box name, let them be the same
+			auto *ski_data = &app->m_Control.atk.ski_data[*app->m_Inst.m_Stat[(*att)[ix].owner_ix].get_ModelName()];
+			std::string weapon_name = (*att)[ix].name;
+			for (auto &vec_box: ski_data->atk_box) {
+				for (auto &box: vec_box) {
+					if (weapon_name.find(box) != std::string::npos) weapon_name = box;
+				}
+			}
 			is_active_att.push_back(false);
-			map_att_active[(*att)[ix].owner_ix][(*att)[ix].name] = is_active_att.size()-1;
+			map_att_active[(*att)[ix].owner_ix][weapon_name] = is_active_att.size()-1;
 			map_att_ix[is_active_att.size()-1] = ix;
 		}
 	}

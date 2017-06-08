@@ -16,7 +16,17 @@ using namespace DirectX;
 namespace imm
 {
 ////////////////
-// echo type cast
+// ECHO_MODE
+////////////////
+////////////////
+enum ECHO_MODE
+{
+	ECHO_MODE_ENDL  = 0,
+	ECHO_MODE_FLUSH = 1,
+};
+//
+////////////////
+// type conversions
 ////////////////
 ////////////////
 std::ostream &operator<<(std::ostream &os, const XMFLOAT2 dest)
@@ -96,10 +106,10 @@ void echo_close()
 ////////////////
 ////////////////
 template <typename T>
-void echo(const T &info, const bool &is_flush = false)
+void echo(const T &info, const bool &echo_mode_value = ECHO_MODE_ENDL)
 {
 	echo_init();
-	if (is_flush) std::cout << info << std::flush;
+	if (echo_mode_value == ECHO_MODE_FLUSH) std::cout << info << std::flush;
 	else std::cout << info << std::endl;
 }
 //

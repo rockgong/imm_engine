@@ -360,6 +360,7 @@ pose_Atk *pose_Atk::instance()
 void pose_Atk::enter(troll *tro)
 {
 	PTR->m_Inst.m_Stat[tro->index].check_set_ClipName(tro->act.Engage());
+	tro->order_stat &= ~ORDER_IS_GUARD;
 }
 //
 void pose_Atk::execute(troll *tro)

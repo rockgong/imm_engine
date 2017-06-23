@@ -218,6 +218,7 @@ void ai_Guard::enter(steering *ste)
 //
 void ai_Guard::execute(steering *ste)
 {
+	if (PTR->m_Inst.m_Troll[ste->index].current_state == pose_Atk::instance()) return;
 	if (ste->count_down > 0.0f) {
 		ste->count_down -= AI_DELTA_TIME_PHY_SLOW;
 	}

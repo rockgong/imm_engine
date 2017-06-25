@@ -293,6 +293,7 @@ struct troll
 	int order_stat;
 	int battle_stat;
 	int focus;
+	float last_face_rot_time;
 	bool is_ON_AIR;
 	bool is_DOWN;
 	bool is_GET_UP;
@@ -309,6 +310,7 @@ troll::troll():
 	order_stat(ORDER_IS_CLEAR),
 	battle_stat(BATTLE_STAT_NONE),
 	focus(-1),
+	last_face_rot_time(0.0f),
 	is_ON_AIR(false),
 	is_DOWN(false),
 	is_GET_UP(false),

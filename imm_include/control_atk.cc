@@ -41,7 +41,7 @@ void skill_data::chunk_over(skill_para &pa)
 	pa.skill_ix = -1;
 	pa.count_down = -1.0f;
 	pa.is_execute = false;
-	pa.is_adjust_dir = false;
+	pa.is_adjust_dmg_dir = false;
 	PTR->m_Control.atk.hits[pa.inst_ix].clear();
 	PTR->m_Hit.deactive_box(pa.inst_ix);
 	auto &tro = PTR->m_Inst.m_Troll[pa.inst_ix];
@@ -190,11 +190,13 @@ void damage_data::update_melee(const float &dt)
 	if (!is_calculated) {
 		PTR->m_AiAttr.calc_skill_melee_immediately(specify, ix_atk, ix_dmg);
 		math::set_inst_speed(ix_dmg, 0.0f);
-		if (!PTR->m_Control.atk.ski_para[ix_atk].is_adjust_dir) {
-			if (PTR->m_Inst.m_Probe.intersects_oblong(ix_atk, ix_dmg)) {
-				PTR->m_Inst.m_Troll[ix_atk].focus = static_cast<int>(ix_dmg);
-				math::set_face_to_face(ix_atk, ix_dmg);
-				PTR->m_Control.atk.ski_para[ix_atk].is_adjust_dir = true;
+		if (!PTR->m_Control.atk.ski_para[ix_atk].is_adjust_dmg_dir) {
+			if (abs(PTR->m_Scene.pass_time() - PTR->m_Inst.m_Troll[ix_dmg].last_face_rot_time) > 2.0f) {
+				if (PTR->m_Inst.m_Probe.intersects_oblong(ix_atk, ix_dmg)) {
+					PTR->m_Inst.m_Troll[ix_atk].focus = static_cast<int>(ix_dmg);
+					math::set_face_to_face(ix_atk, ix_dmg);
+					PTR->m_Control.atk.ski_para[ix_atk].is_adjust_dmg_dir = true;
+				}
 			}
 		}
 		//
@@ -234,11 +236,11 @@ void damage_data::update_magic(const float &dt)
 		delay -= dt;
 		if (delay < 0.0f) {
 			math::set_inst_speed(ix_dmg, 0.0f);
-			if (!PTR->m_Control.atk.ski_para[ix_atk].is_adjust_dir) {
+			if (!PTR->m_Control.atk.ski_para[ix_atk].is_adjust_dmg_dir) {
 				if (PTR->m_Inst.m_Probe.intersects_oblong(ix_atk, ix_dmg)) {
 					PTR->m_Inst.m_Troll[ix_atk].focus = static_cast<int>(ix_dmg);
 					math::set_face_to_face(ix_atk, ix_dmg);
-					PTR->m_Control.atk.ski_para[ix_atk].is_adjust_dir = true;
+					PTR->m_Control.atk.ski_para[ix_atk].is_adjust_dmg_dir = true;
 				}
 			}
 			PTR->m_Scene.audio.play_effect(sfx::Attack);
@@ -382,7 +384,7 @@ void control_atk<T_app>::execute(const size_t &index_in, const char &symbol)
 	if (!ski_para.count(index_in)) init_skill_para(index_in);
 	if (ski_para[index_in].skill_ix == -1) ski_para[index_in].symbol = symbol;
 	ski_para[index_in].is_execute = true;
-	ski_para[index_in].is_adjust_dir = false;
+	ski_para[index_in].is_adjust_dmg_dir = false;
 	ski_data[ski_para[index_in].model_name].strike(ski_para[index_in]);
 }
 //

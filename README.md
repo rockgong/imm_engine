@@ -16,7 +16,7 @@ the [DirectX 11 book](http://www.amazon.com/dp/1936420228/) by Frank Luna.
 * The platform only supports Microsoft Windows.
 * Little document support.
 * Single core optimization.
-* Mixing game data and engine code directly.
+* Mixing game data and engine code directly. (Very high coupling)
 
 Compile Environment:
 --------------------

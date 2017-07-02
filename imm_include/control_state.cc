@@ -101,7 +101,11 @@ void pose_Idle::execute(troll *tro)
 	if (tro->order & ORDER_GUARD_NO) {
 		bool is_do_guard_no = true;
 		if (tro->A.cd_GuardMin > 0.0f) is_do_guard_no = false;
-		if (!(tro->order_stat & ORDER_IS_GUARD)) is_do_guard_no = false;
+		if (!(tro->order_stat & ORDER_IS_GUARD)) {
+			// clear fake ORDER_GUARD_NO
+			tro->order ^= ORDER_GUARD_NO;
+			is_do_guard_no = false;
+		}
 		if (is_do_guard_no) {
 			tro->order ^= ORDER_GUARD_NO;
 			tro->order &= ~ORDER_GUARD;
@@ -360,6 +364,7 @@ pose_Atk *pose_Atk::instance()
 void pose_Atk::enter(troll *tro)
 {
 	PTR->m_Inst.m_Stat[tro->index].check_set_ClipName(tro->act.Engage());
+	// clear guard stat
 	tro->order_stat &= ~ORDER_IS_GUARD;
 }
 //
@@ -410,7 +415,8 @@ void pose_Atk::execute(troll *tro)
 //
 void pose_Atk::exit(troll *tro)
 {
-	tro;
+	// clear guard stat
+	tro->order_stat &= ~ORDER_IS_GUARD;
 }
 ////////////////
 // pose_Damage

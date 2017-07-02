@@ -80,8 +80,11 @@ void ai_interface<T_app>::init_load(T_app *app_in)
 	mental_data.back().type = AI_BEAT_PLAYER1;
 	mental_data.emplace_back();
 	mental_data.back().name = "black_warrior2";
-	mental_data.back().type = AI_BEAT_PLAYER1;	
-}
+	mental_data.back().type = AI_BEAT_PLAYER1;
+	mental_data.emplace_back();
+	mental_data.back().name = "silver_warrior";
+	mental_data.back().type = AI_BEAT_PLAYER1;
+	}
 //
 template <typename T_app>
 void ai_interface<T_app>::reset()

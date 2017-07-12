@@ -82,12 +82,15 @@ struct phy_hit_arrange
 	std::map<size_t, std::map<std::string, size_t>> map_att_active;
 	std::map<size_t, size_t> map_att_ix;
 	std::map<size_t, std::map<size_t, bool> > map_touch;
+	std::map<size_t, std::map<size_t, float> > map_touch_cd;
 	T_app *app;
+	float cd_touch;
 };
 //
 template <typename T_app>
 phy_hit_arrange<T_app>::phy_hit_arrange():
-	app(nullptr)
+	app(nullptr),
+	cd_touch(0.8f)
 {
 	;
 }
@@ -224,6 +227,19 @@ void phy_hit_arrange<T_app>::update()
 {
 	update_world();
 	update_collision();
+	//
+	float dt = app->m_Timer.delta_time();
+	for (auto &cdix: map_touch_cd) {
+	for (auto &cd: cdix.second) {
+		if (cd.second > 0.0f) {
+			cd.second -= dt;
+		}
+		else {
+			if (map_touch[cdix.first][cd.first]) {
+				map_touch[cdix.first][cd.first] = false;
+			}
+		}
+	}}
 }
 //
 template <typename T_app>
@@ -258,6 +274,7 @@ void phy_hit_arrange<T_app>::update_collision()
 			bool is_touch = app->m_Inst.m_BoundW.intersects(ix_inst, bbox_w[ix]);
 			if (is_touch) {
 				map_touch[map_box_owner[ix]][ix_inst] = true;
+				map_touch_cd[map_box_owner[ix]][ix_inst] = cd_touch;
 				app->m_Control.atk.cause_damage(
 					map_box_owner[ix],
 					ix_inst,
@@ -291,7 +308,8 @@ void phy_hit_arrange<T_app>::update_collision()
 			bool is_touch = app->m_Inst.m_BoundW.intersects(ix_inst, weapon_ix);
 			map_touch[owner_ix][ix_inst] &= is_touch;
 			if (is_touch) {
-				map_touch[owner_ix][ix_inst] = true;
+				map_touch[owner_ix][ix_inst] = true;				
+				map_touch_cd[owner_ix][ix_inst] = cd_touch;
 				app->m_Control.atk.cause_damage(
 					owner_ix,
 					ix_inst,

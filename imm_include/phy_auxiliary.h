@@ -115,8 +115,14 @@ void phy_wireframe<T_app>::rebuild_buffer()
 	XMFLOAT4 color;
 	for (size_t ix = 0; ix != app->m_Inst.m_BoundL.map.size(); ++ix) {
 		XMFLOAT3 corners[8];
-		if (app->m_Inst.m_BoundL.map[ix].first != PHY_BOUND_BOX) continue;
-		app->m_Inst.m_BoundL.bd0[app->m_Inst.m_BoundL.map[ix].second].GetCorners(corners);
+		if (app->m_Inst.m_BoundL.map[ix].first == PHY_BOUND_SPHERE) continue;
+		if (app->m_Inst.m_BoundL.map[ix].first == PHY_BOUND_BOX) {
+			app->m_Inst.m_BoundL.bd0[app->m_Inst.m_BoundL.map[ix].second].GetCorners(corners);
+		}
+		if (app->m_Inst.m_BoundL.map[ix].first == PHY_BOUND_ORI_BOX) {
+			app->m_Inst.m_BoundL.bd1[app->m_Inst.m_BoundL.map[ix].second].GetCorners(corners);
+		}
+		//
 		if (app->m_Inst.m_Stat[ix].property & INST_IS_ATTACH) color = XMFLOAT4(Colors::Orange);
 		else color = XMFLOAT4(Colors::Yellow);
 		vertex::pos_color vertices[] = {
@@ -213,7 +219,7 @@ void phy_wireframe<T_app>::draw()
 	XMMATRIX view_proj = app->m_Cam.get_ViewProj();
 	// Draw collision box
 	for (size_t ix = 0; ix != app->m_Inst.m_BoundL.map.size(); ++ix) {
-		if (app->m_Inst.m_BoundL.map[ix].first != PHY_BOUND_BOX) continue;
+		if (app->m_Inst.m_BoundL.map[ix].first == PHY_BOUND_SPHERE) continue;
 		assert(box_collision.count(ix));
 		app->m_D3DDC->IASetVertexBuffers(0, 1, &box_collision[ix], &stride, &offset);
 		XMFLOAT4X4 *inst_world = app->m_Inst.m_Stat[ix].get_World();

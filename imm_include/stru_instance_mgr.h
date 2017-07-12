@@ -153,6 +153,7 @@ void instance_mgr<T_app>::reload()
 			m_Steering[ix].init(ix);
 		}
 	}
+	assert(m_NameMap.size() == m_Stat.size());
 	for (auto &name: m_NameMap) {
 		m_IndexMap[name.second] = name.first;
 	}
@@ -214,7 +215,6 @@ void instance_mgr<T_app>::push_back_basic(
 			}
 			break;
 		case PHY_BOUND_ORI_BOX:
-			// only for attachment weapon now
 			phy_set_box(
 				m_BoundL.bd1.back(),
 				v_inst[ix].model->m_Vertices,
@@ -516,7 +516,8 @@ void instance_mgr<T_app>::update_frustum_culling()
 	XMMATRIX inv_view = XMMatrixInverse(&det_view, m_App->m_Cam.get_View());
 	m_CamFrustumL.Transform(m_CamFrustumW, inv_view);
 	// disappear if not in frustum
-	m_BoundW.switch_box_alter(false, m_BoundL);
+	// remove bounding offset
+	m_BoundW.switch_box_alter_offset(false, m_BoundL);
 	for (size_t ix = 0; ix != m_Stat.size(); ++ix) {
 		switch(m_BoundW.map[ix].first) {
 		case PHY_BOUND_BOX:
@@ -530,7 +531,7 @@ void instance_mgr<T_app>::update_frustum_culling()
 			break;
 		}
 	}
-	m_BoundW.switch_box_alter(true, m_BoundL);
+	m_BoundW.switch_box_alter_offset(true, m_BoundL);
 	// shpere test
 	BoundingSphere p1shpere;
 	p1shpere.Center = m_BoundW.center(m_App->m_Control.player1);

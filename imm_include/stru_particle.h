@@ -25,6 +25,7 @@ enum PLASMA_TYPE
 	PLASMA_CHARGE,
 	PLASMA_LIGHTNING,
 	PLASMA_BROKEN,
+	PLASMA_BLOCK,
 };
 ////////////////
 // state_plasma
@@ -45,12 +46,14 @@ struct state_plasma
 	particle pt_charge;
 	particle pt_lightning;
 	particle pt_broken;
+	particle pt_block;
 	std::list<inst_plasam> list_fire;
 	std::list<inst_plasam> list_strike;
 	std::list<inst_plasam> list_strike2;
 	std::list<inst_plasam> list_charge;
 	std::list<inst_plasam> list_lightning;
 	std::list<inst_plasam> list_broken;
+	std::list<inst_plasam> list_block;
 	bool is_active;
 	size_t index_fire;
 	size_t index_strike;
@@ -58,12 +61,14 @@ struct state_plasma
 	size_t index_charge;
 	size_t index_lightning;
 	size_t index_broken;
+	size_t index_block;
 	ID3D11ShaderResourceView *tex_fire_srv;
 	ID3D11ShaderResourceView *tex_strike_srv;
 	ID3D11ShaderResourceView *tex_strike2_srv;
 	ID3D11ShaderResourceView *tex_charge_srv;
 	ID3D11ShaderResourceView *tex_lightning_srv;
 	ID3D11ShaderResourceView *tex_broken_srv;
+	ID3D11ShaderResourceView *tex_block_srv;
 	ID3D11ShaderResourceView *tex_random_srv;
 private:
 	state_plasma(const state_plasma &rhs);
@@ -78,12 +83,14 @@ state_plasma::state_plasma():
 	index_charge(0),
 	index_lightning(0),
 	index_broken(0),
+	index_block(0),
 	tex_fire_srv(nullptr),
 	tex_strike_srv(nullptr),
 	tex_strike2_srv(nullptr),
 	tex_charge_srv(nullptr),
 	tex_lightning_srv(nullptr),
 	tex_broken_srv(nullptr),
+	tex_block_srv(nullptr),
 	tex_random_srv(nullptr)
 {
 	;
@@ -97,6 +104,7 @@ state_plasma::~state_plasma()
 	RELEASE_COM(tex_charge_srv);
 	RELEASE_COM(tex_lightning_srv);
 	RELEASE_COM(tex_broken_srv);
+	RELEASE_COM(tex_block_srv);
 	RELEASE_COM(tex_random_srv);
 }
 //
@@ -110,6 +118,7 @@ void state_plasma::init_load(ID3D11Device *device, ID3D11DeviceContext *context)
 	get_dds["plasma_charge_dds"] = "";
 	get_dds["plasma_lightning_dds"] = "";
 	get_dds["plasma_broken_dds"] = "";
+	get_dds["plasma_block_dds"] = "";
 	lua_reader l_reader;
 	l_reader.loadfile(concrete);
 	l_reader.map_from_string(get_dds);
@@ -118,7 +127,8 @@ void state_plasma::init_load(ID3D11Device *device, ID3D11DeviceContext *context)
 		csv_value_is_empty(get_dds["plasma_strike2_dds"]) ||
 		csv_value_is_empty(get_dds["plasma_charge_dds"]) ||
 		csv_value_is_empty(get_dds["plasma_lightning_dds"]) ||
-		csv_value_is_empty(get_dds["plasma_broken_dds"])) {
+		csv_value_is_empty(get_dds["plasma_broken_dds"]) ||
+		csv_value_is_empty(get_dds["plasma_block_dds"])) {
 	//
 		is_active = false;
 		return;
@@ -158,6 +168,11 @@ void state_plasma::init_load(ID3D11Device *device, ID3D11DeviceContext *context)
 	file_names.push_back(path_tex+str_to_wstr(get_dds["plasma_broken_dds"]));
 	tex_broken_srv = create_Texture2DArraySRV(device, context, file_names);
 	pt_broken.init(device, effects::m_PtBrokenFX, tex_broken_srv, tex_random_srv, 32, 16);
+	// Block
+	file_names.clear();
+	file_names.push_back(path_tex+str_to_wstr(get_dds["plasma_block_dds"]));
+	tex_block_srv = create_Texture2DArraySRV(device, context, file_names);
+	pt_block.init(device, effects::m_PtBlockFX, tex_block_srv, tex_random_srv, 32, 16);
 }
 //
 void state_plasma::update(const float &dt, const float &total_time)
@@ -169,12 +184,14 @@ void state_plasma::update(const float &dt, const float &total_time)
 	pt_charge.update(dt, total_time);
 	pt_lightning.update(dt, total_time);
 	pt_broken.update(dt, total_time);
+	pt_block.update(dt, total_time);
 	for (auto &inst: list_fire) inst.update(dt);
 	for (auto &inst: list_strike) inst.update(dt);
 	for (auto &inst: list_strike2) inst.update(dt);
 	for (auto &inst: list_charge) inst.update(dt);
 	for (auto &inst: list_lightning) inst.update(dt);
 	for (auto &inst: list_broken) inst.update(dt);
+	for (auto &inst: list_block) inst.update(dt);
 	auto is_should_del =
 		[](const inst_plasam &pla) {return (pla.count_down > -99.0f && pla.count_down < 0.0f);};
 	list_fire.remove_if(is_should_del);
@@ -183,6 +200,7 @@ void state_plasma::update(const float &dt, const float &total_time)
 	list_charge.remove_if(is_should_del);
 	list_lightning.remove_if(is_should_del);
 	list_broken.remove_if(is_should_del);
+	list_block.remove_if(is_should_del);
 	//
 }
 //
@@ -195,12 +213,14 @@ void state_plasma::draw(ID3D11DeviceContext *context, const camera &cam)
 	pt_charge.set_EyePos(cam.get_Position());
 	pt_lightning.set_EyePos(cam.get_Position());
 	pt_broken.set_EyePos(cam.get_Position());
+	pt_block.set_EyePos(cam.get_Position());
 	pt_fire.draw_list(context, cam, list_fire);
 	pt_strike.draw_list(context, cam, list_strike);
 	pt_strike2.draw_list(context, cam, list_strike2);
 	pt_charge.draw_list(context, cam, list_charge);
 	pt_lightning.draw_list(context, cam, list_lightning);
 	pt_broken.draw_list(context, cam, list_broken);
+	pt_block.draw_list(context, cam, list_block);
 }
 //
 void state_plasma::remove_all()
@@ -211,6 +231,7 @@ void state_plasma::remove_all()
 	list_charge.clear();
 	list_lightning.clear();
 	list_broken.clear();
+	list_block.clear();
 }
 //
 void state_plasma::push_back(PLASMA_TYPE type, const float &count_down, const XMFLOAT3 &pos)
@@ -243,6 +264,9 @@ void state_plasma::push_back(PLASMA_TYPE type, const float &count_down, const XM
 		break;
 	case PLASMA_BROKEN:
 		do_push_back(index_broken, list_broken, pt_broken);
+		break;
+	case PLASMA_BLOCK:
+		do_push_back(index_block, list_block, pt_block);
 		break;
 	}
 }

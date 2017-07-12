@@ -67,10 +67,11 @@ void status_data::build_ability()
 //
 void status_data::build_name()
 {
-	name["pepper"] = L"Pepper";
-	name["nino"] = L"Nino";
-	name["unknow"] = L"Unknow";
-	name["black_warrior"] = L"Soul of Warrior Armor";
+	name["pepper"] = L"PEPPER";
+	name["nino"] = L"NINO";
+	name["unknow"] = L"UNKNOW";
+	name["black_warrior"] = L"BLACK WARRIOR";
+	name["silver_warrior"] = L"SILVER WARRIOR";
 }
 //
 std::wstring *status_data::get_name(const std::string &name_in)
@@ -81,8 +82,10 @@ std::wstring *status_data::get_name(const std::string &name_in)
 //
 void status_data::build_attr()
 {
-	attr["black_warrior"].hp_max = 60.0f;
-	attr["black_warrior"].hp = 60.0f;
+	attr["black_warrior"].hp_max = 50.0f;
+	attr["black_warrior"].hp = 50.0f;
+	attr["silver_warrior"].hp_max = 50.0f;
+	attr["silver_warrior"].hp = 50.0f;
 }
 void status_data::assign_attr(ai_points &points, const std::string &inst_name)
 {

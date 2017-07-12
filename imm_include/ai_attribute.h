@@ -65,6 +65,7 @@ struct ui_attr
 	float tar_hp;
 	float tar_hp_max;
 	size_t tar_ix;
+	size_t tar_size;
 	size_t tar_flush;
 	float dt_target_show;
 	float dt_flush;
@@ -81,6 +82,7 @@ ui_attr<T_app>::ui_attr():
 	tar_hp(1.0f),
 	tar_hp_max(1.0f),
 	tar_ix(0),
+	tar_size(0),
 	tar_flush(0),
 	dt_target_show(-1.0f),
 	dt_flush(-1.0f),
@@ -157,8 +159,20 @@ void ui_attr<T_app>::update_target()
 	tar_flush = app->m_Inst.m_Steering[app->m_Control.player1].attack.size();
 	if (tar_flush == 0) return;
 	size_t tmp_ix = app->m_Inst.m_Steering[app->m_Control.player1].attack.back();
-	if (app->m_Inst.m_Stat[tmp_ix].property & INST_IS_CONTROLLABLE) tar_ix = tmp_ix;
-	else return;
+	bool is_get_ix = false;
+	if (app->m_Inst.m_Stat[tmp_ix].property & INST_IS_CONTROLLABLE) {
+		tar_ix = tmp_ix;
+		is_get_ix = true;
+	}
+	else {
+		for (size_t ix = tar_size; ix < tar_flush-1; ++ix) {
+			size_t instix = app->m_Inst.m_Steering[app->m_Control.player1].attack[ix];
+			if (app->m_Inst.m_Stat[instix].property & INST_IS_CONTROLLABLE) {
+				tar_ix = instix;
+				is_get_ix = true;
+			}
+		}
+	}
 	if (!math::float_is_equal(tar_hp_max, app->m_AiAttr.points[tar_ix].hp_max) ||
 		!math::float_is_equal(tar_hp, app->m_AiAttr.points[tar_ix].hp)) {
 		tar_hp_max = app->m_AiAttr.points[tar_ix].hp_max;
@@ -169,6 +183,8 @@ void ui_attr<T_app>::update_target()
 		app->m_UiMgr.status.define_set_tar_hp_rect(tar_hp_max);
 		need_resize = true;
 	}
+	if (!is_get_ix) return;
+	tar_size = tar_flush;
 	dt_target_show = 3.0f;
 	app->m_UiMgr.status.group_active("tar", true);
 	app->m_UiMgr.status.define_set_tar_name(

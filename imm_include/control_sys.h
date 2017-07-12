@@ -265,6 +265,7 @@ void control_sys<T_app>::on_mouse_down(WPARAM btn_state, const int &pos_x, const
 	if (app->m_Cmd.is_active) return;
 	// player
 	if (style1 & CONTROL_CAM_FREE) {
+		assert(false);
 		if (btn_state & MOUSE_P1_PICK) mouse_pick();
 		if (btn_state & MOUSE_P1_MOVE) mouse_inst_move();
 	}

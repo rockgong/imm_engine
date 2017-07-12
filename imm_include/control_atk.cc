@@ -258,6 +258,7 @@ void damage_data::stamp()
 	}
 	else {
 		count_down = PTR->m_Control.atk.ski_para[ix_atk].count_down;
+		if (count_down > 0.7f) count_down = 0.7f;
 		is_calculated = false;
 		PTR->m_Inst.m_Steering[ix_atk].attack.push_back(ix_dmg);
 		PTR->m_Inst.m_Steering[ix_dmg].damage.push_back(ix_atk);

@@ -218,17 +218,28 @@ void phy_position<T_app>::impulse_casual(
 	}
 	//
 	if (relative_size > 1.0f && (!is_specified_AtoB)) {
-		float big_x = (std::max)(prop_A.p_aabb3->x, prop_B.p_aabb3->x);
+		XMFLOAT3 extents_A = *prop_A.p_aabb3;
+		XMFLOAT3 extents_B = *prop_A.p_aabb3;
+		if (prop_A.is_switch_Y_Z) {
+			extents_A.y = prop_A.p_aabb3->z;
+			extents_A.z = prop_A.p_aabb3->y;
+		}
+		if (prop_B.is_switch_Y_Z) {
+			extents_B.y = prop_B.p_aabb3->z;
+			extents_B.z = prop_B.p_aabb3->y;
+		}
+		//
+		float big_x = (std::max)(extents_A.x, extents_B.x);
 		if (big_x < abs(XMVectorGetX(AtoB)) ) {
 			AtoB = XMVectorSetZ(AtoB, 0.0f);
 			AtoB = XMVectorSetY(AtoB, 0.0f);
 		}
-		float big_z = (std::max)(prop_A.p_aabb3->z, prop_B.p_aabb3->z);
+		float big_z = (std::max)(extents_A.z, extents_B.z);
 		if (big_z < abs(XMVectorGetZ(AtoB)) ) {
 			AtoB = XMVectorSetX(AtoB, 0.0f);
 			AtoB = XMVectorSetY(AtoB, 0.0f);
 		}
-		float big_y = (std::max)(prop_A.p_aabb3->y, prop_B.p_aabb3->y);
+		float big_y = (std::max)(extents_A.y, extents_B.y);
 		if (big_y < abs(XMVectorGetY(AtoB)) ) {
 			AtoB = XMVectorSetX(AtoB, 0.0f);
 			AtoB = XMVectorSetZ(AtoB, 0.0f);
@@ -265,11 +276,20 @@ void phy_position<T_app>::impulse_casual(
 	vel_B = XMVectorSubtract(vel_B, injected_impulse);
 	// translate force as estimated velocity value
 	if (*prop_A.intera_tp & PHY_INTERA_STATIC) {
-		XMStoreFloat3(&prop_A.vel_bring, XMVectorScale(vel_B_all, 1.5f));
+		XMVECTOR bring_A = XMVectorScale(vel_B_all, 1.5f);
+		// avoid too big gravity or some force (overlapping objects)
+		if (abs(XMVectorGetY(bring_A)) > 10.0f) bring_A = XMVectorSetY(bring_A, 0.0f);
+		if (abs(XMVectorGetX(bring_A)) > 100.0f) bring_A = XMVectorSetX(bring_A, 0.0f);
+		if (abs(XMVectorGetZ(bring_A)) > 100.0f) bring_A = XMVectorSetZ(bring_A, 0.0f);
+		XMStoreFloat3(&prop_A.vel_bring, bring_A);
 		prop_A.bring_ix = prop_B.ix;
 	}
 	if (*prop_B.intera_tp & PHY_INTERA_STATIC) {
-		XMStoreFloat3(&prop_B.vel_bring, XMVectorScale(vel_A_all, 1.5f));
+		XMVECTOR bring_B = XMVectorScale(vel_A_all, 1.5f);
+		if (abs(XMVectorGetY(bring_B)) > 10.0f) bring_B = XMVectorSetY(bring_B, 0.0f);
+		if (abs(XMVectorGetX(bring_B)) > 100.0f) bring_B = XMVectorSetX(bring_B, 0.0f);
+		if (abs(XMVectorGetZ(bring_B)) > 100.0f) bring_B = XMVectorSetZ(bring_B, 0.0f);
+		XMStoreFloat3(&prop_B.vel_bring, bring_B);
 		prop_B.bring_ix = prop_A.ix;
 	}
 	// penetration depth estimate as vel_absolute
@@ -300,6 +320,7 @@ void phy_position<T_app>::impulse_casual(
 		c_A = XMVectorAdd(c_A, XMVectorScale(to_scene, penetration));
 		w_A.r[3] = XMVectorAdd(c_A, offset_A);
 		w_A.r[3] = XMVectorSetW(w_A.r[3], 1.0f);
+		app->m_SfxSelect.effect_block_task(prop_A.ix);
 	}
 	else if (*prop_A.intera_tp == PHY_INTERA_FIXED_INVISILBE) {
 		XMVECTOR offset_B = XMVectorSubtract(w_B.r[3], c_B);
@@ -316,6 +337,7 @@ void phy_position<T_app>::impulse_casual(
 		c_B = XMVectorAdd(c_B, XMVectorScale(to_scene, penetration));
 		w_B.r[3] = XMVectorAdd(c_B, offset_B);
 		w_B.r[3] = XMVectorSetW(w_B.r[3], 1.0f);
+		app->m_SfxSelect.effect_block_task(prop_B.ix);
 	}
 	// big object
 	// !(relative_size < 1.0f)
@@ -337,6 +359,8 @@ void phy_position<T_app>::impulse_casual(
 		XMStoreFloat3(&prop_A.vel_absolute, vel_absolute_A);
 		if (*prop_B.intera_tp == PHY_INTERA_FIXED_INVISILBE) XMStoreFloat4x4(&world_A, w_A);
 	}
+	assert(!XMVector4IsNaN(vel_A));
+	assert(!XMVector4IsNaN(vel_B));
 	return;
 }
 ////////////////

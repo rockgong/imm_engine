@@ -185,6 +185,7 @@ void model_load_csv_basic(
 		model[model_name].m_IsAlpha = (stoi(csv_model[ix][4]) != 0);
 		model[model_name].m_BoundType = phy_bound_type_str(csv_model[ix][5]);
 		model[model_name].m_InteractiveType = phy_interactive_type_str(csv_model[ix][6]);
+		model[model_name].m_IsRotXneg90Y180 = rot_front[model_name].is_RotXneg90Y180();
 	}
 }
 ////////////////

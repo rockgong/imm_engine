@@ -11,6 +11,15 @@
 namespace imm
 {
 ////////////////
+// sfx_task
+////////////////
+////////////////
+struct sfx_task
+{
+	XMFLOAT3 center;
+	size_t ix;
+};
+////////////////
 // sfx_select
 ////////////////
 ////////////////
@@ -19,13 +28,18 @@ struct sfx_select
 {
 	sfx_select();
 	void init(T_app *app_in);
+	void update();
+	void update_block();
 	void play_effect(
 		const SKILL_SPECIFY &skill,
 		const size_t &ix1,
 		const size_t &ix2,
 		const XMFLOAT3 &center,
 		const int &order_stat_dmg = -1);
+	void effect_block_task(const size_t &ix1);
 	T_app *app;
+	std::vector<sfx_task> block;
+	std::map<size_t, float> block_cd;
 };
 //
 template <typename T_app>
@@ -74,6 +88,38 @@ void sfx_select<T_app>::play_effect(
 			app->m_Scene.audio.play_effect(sfx::Attack);
 		}
 	}
+}
+//
+template <typename T_app>
+void sfx_select<T_app>::update()
+{
+	update_block();
+}
+//
+template <typename T_app>
+void sfx_select<T_app>::update_block()
+{
+	for (auto &task: block) {
+		app->m_Scene.plasma.push_back(PLASMA_BLOCK, 0.1f, task.center);
+	}
+	block.clear();
+	float dt = app->m_Timer.delta_time();
+	for (auto &cd: block_cd) {
+		if (cd.second > 0.0f) cd.second -= dt;
+	}
+}
+//
+template <typename T_app>
+void sfx_select<T_app>::effect_block_task(const size_t &ix1)
+{
+	if (block_cd.count(ix1)) {
+		if (block_cd[ix1] > 0.0f) return;
+	}
+	sfx_task task;
+	task.center = app->m_Inst.m_BoundW.center(ix1);
+	task.ix = ix1;
+	block.push_back(task);
+	block_cd[ix1] = 0.1f;
 }
 //
 }

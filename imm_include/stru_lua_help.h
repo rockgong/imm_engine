@@ -190,25 +190,25 @@ struct rotation_xyz
 {
 	rotation_xyz();
 	rotation_xyz(const std::string &xyz);
-	float x;
-	float y;
-	float z;
 	XMMATRIX get_Matrix();
+	bool is_RotXneg90Y180();
+	XMFLOAT3 roation;
+	XMFLOAT3 degree;
+	bool is_assigned_xyz;
 };
 //
 rotation_xyz::rotation_xyz():
-	x(0.0f),
-	y(0.0f),
-	z(0.0f)
+	roation(0.0f, 0.0f, 0.0f),
+	degree(0.0f, 0.0f, 0.0f),
+	is_assigned_xyz(false)
 {
 	;
 }
 //
 rotation_xyz::rotation_xyz(const std::string &xyz)
 {
-	x = 0.0f;
-	y = 0.0f;
-	z = 0.0f;
+	roation = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	degree = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	std::vector<std::string::size_type> pos;
 	pos.push_back(xyz.find_first_of("Xx"));
 	pos.push_back(xyz.find_first_of("Yy"));
@@ -221,22 +221,42 @@ rotation_xyz::rotation_xyz(const std::string &xyz)
 			if (xyz.substr(pos[ix]+1).find_first_of("+-") == 0) offset = 1;
 			if (xyz.substr(pos[ix]+1+offset).find_first_of(s_number) == 0) {
 				switch (ix) {
-				case 0: x = std::stof(xyz.substr(pos[ix]+1))/180.0f*XM_PI; break;
-				case 1: y = std::stof(xyz.substr(pos[ix]+1))/180.0f*XM_PI; break;
-				case 2: z = std::stof(xyz.substr(pos[ix]+1))/180.0f*XM_PI; break;
+				case 0:
+					roation.x = std::stof(xyz.substr(pos[ix]+1));
+					degree.x = roation.x/180.0f*XM_PI;
+					break;
+				case 1:
+					roation.y = std::stof(xyz.substr(pos[ix]+1));
+					degree.y = roation.y/180.0f*XM_PI;
+					break;
+				case 2:
+					roation.z = std::stof(xyz.substr(pos[ix]+1));
+					degree.z = roation.z/180.0f*XM_PI;
+					break;
 				}
 			}
 		}
 	}
+	is_assigned_xyz = true;
 }
 //
 XMMATRIX rotation_xyz::get_Matrix()
 {
 	XMMATRIX R = XMMatrixIdentity();
-	if (abs(x) > 0.01f) R = XMMatrixMultiply(R, XMMatrixRotationX(x));
-	if (abs(y) > 0.01f) R = XMMatrixMultiply(R, XMMatrixRotationY(y));
-	if (abs(z) > 0.01f) R = XMMatrixMultiply(R, XMMatrixRotationZ(z));
+	// if rotation 90 degrees about X axis, OBB test will be wrong, but 90.01 degrees is ok
+	if (abs(degree.x) > 0.01f) R = XMMatrixMultiply(R, XMMatrixRotationX(degree.x+0.01f));
+	if (abs(degree.y) > 0.01f) R = XMMatrixMultiply(R, XMMatrixRotationY(degree.y));
+	if (abs(degree.z) > 0.01f) R = XMMatrixMultiply(R, XMMatrixRotationZ(degree.z));
 	return R;
+}
+//
+bool rotation_xyz::is_RotXneg90Y180()
+{
+	assert(is_assigned_xyz);
+	if (math::float_is_equal(roation.x, -90.0f) && math::float_is_equal(roation.y, 180.0f)) {
+		return true;
+	}
+	return false;
 }
 ////////////////
 // csv_string_to_float

@@ -44,12 +44,14 @@ public:
 	int m_BoundType;
 	int m_InteractiveType;
 	bool m_IsAlpha;
+	bool m_IsRotXneg90Y180;
 };
 //
 basic_model::basic_model():
 	m_BoundType(0),
 	m_InteractiveType(0),
-	m_IsAlpha(false)
+	m_IsAlpha(false),
+	m_IsRotXneg90Y180(false)
 {
 	;
 }

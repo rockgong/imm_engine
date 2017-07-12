@@ -232,6 +232,7 @@ public:
 	static particle_effect         *m_PtChargeFX;
 	static particle_effect         *m_PtLightningFX;
 	static particle_effect         *m_PtBrokenFX;
+	static particle_effect         *m_PtBlockFX;
 };
 basic_effect            *effects::m_BasicFX          = nullptr;
 normal_map_effect       *effects::m_NormalMapFX      = nullptr;
@@ -249,6 +250,7 @@ particle_effect         *effects::m_PtGuardFX        = nullptr;
 particle_effect         *effects::m_PtChargeFX       = nullptr;
 particle_effect         *effects::m_PtLightningFX    = nullptr;
 particle_effect         *effects::m_PtBrokenFX       = nullptr;
+particle_effect         *effects::m_PtBlockFX        = nullptr;
 void effects::destroy_all()
 {
 	SAFE_DELETE(m_BasicFX);
@@ -267,6 +269,7 @@ void effects::destroy_all()
 	SAFE_DELETE(m_PtChargeFX);
 	SAFE_DELETE(m_PtLightningFX);
 	SAFE_DELETE(m_PtBrokenFX);
+	SAFE_DELETE(m_PtBlockFX);
 }
 //
 void effects::init_all(ID3D11Device *device)
@@ -288,6 +291,7 @@ void effects::init_all(ID3D11Device *device)
 	m_PtChargeFX       = new particle_effect(device, path+L"pt_charge.fxo");
 	m_PtLightningFX    = new particle_effect(device, path+L"pt_lightning.fxo");
 	m_PtBrokenFX       = new particle_effect(device, path+L"pt_broken.fxo");
+	m_PtBlockFX        = new particle_effect(device, path+L"pt_block.fxo");
 }
 }
 #endif

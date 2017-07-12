@@ -315,7 +315,7 @@ void scene_mgr<T_app>::relaod_after_instance_build()
 	}
 	// PHY_INTERA_FIXED_INVISILBE
 	for (auto &inst: app->m_Inst.m_Stat) {
-		if (*inst.phy.intera_tp == PHY_INTERA_FIXED_INVISILBE) inst.set_IsOffline(true);
+		if (*inst.phy.intera_tp == PHY_INTERA_FIXED_INVISILBE) inst.set_IsTransparent(true);
 	}
 }
 template <typename T_app>

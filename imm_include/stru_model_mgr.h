@@ -612,9 +612,11 @@ void model_mgr::copy_instance(
 		}
 		break;
 	case MODEL_SKINNED:
+		assert(false);
 		return;
 		break;
 	case MODEL_SIMPLE_P:
+		assert(false);
 		return;
 		break;
 	}

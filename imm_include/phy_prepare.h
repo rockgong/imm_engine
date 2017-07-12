@@ -43,6 +43,7 @@ struct phy_property
 	bool is_land;
 	bool is_on_land;
 	bool is_abnormal;
+	bool is_switch_Y_Z;
 };
 //
 phy_property::phy_property():
@@ -66,7 +67,8 @@ phy_property::phy_property():
 	absolute_alt(-1),
 	is_land(false),
 	is_on_land(false),
-	is_abnormal(false)
+	is_abnormal(false),
+	is_switch_Y_Z(false)
 {
 	;
 }
@@ -226,7 +228,7 @@ public:
 	void set_box_offset(const size_t &ix, const std::vector<float> &offset);
 	void set_box_offset(const size_t &ix, const std::vector<float> &offset, const bool &is_forward);
 	void set_phy_value(const size_t &ix);
-	void switch_box_alter(const bool &is_alter, const phy_bound_mgr &mgr_in);
+	void switch_box_alter_offset(const bool &is_alter, const phy_bound_mgr &mgr_in);
 	void transform(const size_t &ix, phy_bound_mgr &out, CXMMATRIX &world);
 	bool intersects(const size_t &ixA, const size_t &ixB);
 	bool intersects(const size_t &ix, CXMVECTOR &origin, CXMVECTOR &direction, float &dist);
@@ -285,6 +287,7 @@ void phy_bound_mgr<T_app>::push_back_empty(const PHY_BOUND_TYPE &type)
 		map.emplace_back(type, bd2.size()-1);
 		return;
 	case PHY_BOUND_NULL:
+		assert(false);
 		map.emplace_back(type, 0);
 		return;
 	}
@@ -327,35 +330,6 @@ void phy_bound_mgr<T_app>::set_phy_value(const size_t &ix)
 	XMFLOAT3 extent;
 	float min_extent;
 	float sum_extent;
-	switch(map[ix].first) {
-	case PHY_BOUND_BOX:
-		// phy_impulse_casual() calculate PHY_BOUND_BOX collision normal vector
-		// PHY_BOUND_ORI_BOX, PHY_BOUND_SPHERE not use p_aabb3
-		app->m_Inst.m_Stat[ix].phy.p_aabb3 = &bd0[map[ix].second].Extents;
-		extent = bd0[map[ix].second].Extents;
-		sum_extent = extent.x + extent.y + extent.z;
-		app->m_Inst.m_Stat[ix].phy.avg_extent = sum_extent/3.0f;
-		min_extent = (std::min)(extent.x, extent.y);
-		min_extent = (std::min)(min_extent, extent.z);
-		app->m_Inst.m_Stat[ix].phy.min_extent = min_extent;
-		break;
-	case PHY_BOUND_ORI_BOX:
-		app->m_Inst.m_Stat[ix].phy.p_aabb3 = nullptr;
-		extent = bd1[map[ix].second].Extents;
-		sum_extent = extent.x + extent.y + extent.z;
-		app->m_Inst.m_Stat[ix].phy.avg_extent = sum_extent/3.0f;
-		min_extent = (std::min)(extent.x, extent.y);
-		min_extent = (std::min)(min_extent, extent.z);
-		app->m_Inst.m_Stat[ix].phy.min_extent = min_extent;
-		break;
-	case PHY_BOUND_SPHERE:
-		app->m_Inst.m_Stat[ix].phy.p_aabb3 = nullptr;
-		app->m_Inst.m_Stat[ix].phy.avg_extent = bd2[map[ix].second].Radius;
-		app->m_Inst.m_Stat[ix].phy.min_extent = bd2[map[ix].second].Radius;
-		break;
-	default:
-		assert(false);
-	}
 	//
 	auto p_inst = app->m_Inst.m_Stat[ix].p_inst;
 	switch(app->m_Inst.m_Stat[ix].type) {
@@ -374,11 +348,43 @@ void phy_bound_mgr<T_app>::set_phy_value(const size_t &ix)
 		break;
 	}
 	//
+	switch(map[ix].first) {
+	case PHY_BOUND_BOX:
+		// phy_impulse_casual() calculate PHY_BOUND_BOX collision normal vector
+		// PHY_BOUND_ORI_BOX, PHY_BOUND_SPHERE not use p_aabb3
+		app->m_Inst.m_Stat[ix].phy.p_aabb3 = &bd0[map[ix].second].Extents;
+		extent = bd0[map[ix].second].Extents;
+		sum_extent = extent.x + extent.y + extent.z;
+		app->m_Inst.m_Stat[ix].phy.avg_extent = sum_extent/3.0f;
+		min_extent = (std::min)(extent.x, extent.y);
+		min_extent = (std::min)(min_extent, extent.z);
+		app->m_Inst.m_Stat[ix].phy.min_extent = min_extent;
+		break;
+	case PHY_BOUND_ORI_BOX:
+		app->m_Inst.m_Stat[ix].phy.is_switch_Y_Z = 
+			&((skinned_model_instance*)p_inst)->model->m_IsRotXneg90Y180;
+		app->m_Inst.m_Stat[ix].phy.p_aabb3 = &bd1[map[ix].second].Extents;
+		extent = bd1[map[ix].second].Extents;
+		sum_extent = extent.x + extent.y + extent.z;
+		app->m_Inst.m_Stat[ix].phy.avg_extent = sum_extent/3.0f;
+		min_extent = (std::min)(extent.x, extent.y);
+		min_extent = (std::min)(min_extent, extent.z);
+		app->m_Inst.m_Stat[ix].phy.min_extent = min_extent;
+		break;
+	case PHY_BOUND_SPHERE:
+		app->m_Inst.m_Stat[ix].phy.p_aabb3 = nullptr;
+		app->m_Inst.m_Stat[ix].phy.avg_extent = bd2[map[ix].second].Radius;
+		app->m_Inst.m_Stat[ix].phy.min_extent = bd2[map[ix].second].Radius;
+		break;
+	default:
+		assert(false);
+	}
+	//
 	app->m_Inst.m_Stat[ix].phy.ix = static_cast<int>(ix);
 }
 //
 template <typename T_app>
-void phy_bound_mgr<T_app>::switch_box_alter(const bool &is_alter, const phy_bound_mgr &mgr_in)
+void phy_bound_mgr<T_app>::switch_box_alter_offset(const bool &is_alter, const phy_bound_mgr &mgr_in)
 {
 	if (is_alter) {
 		assert(!is_altered);
@@ -523,9 +529,13 @@ template <typename T_app>
 float phy_bound_mgr<T_app>::extents_y(const size_t &ix)
 {
 	switch(map[ix].first) {
-	case PHY_BOUND_BOX: return bd0[map[ix].second].Extents.y;
-	case PHY_BOUND_ORI_BOX: return bd1[map[ix].second].Extents.y;
-	case PHY_BOUND_SPHERE: return bd2[map[ix].second].Radius;
+	case PHY_BOUND_BOX:
+		return bd0[map[ix].second].Extents.y;
+	case PHY_BOUND_ORI_BOX:
+		if (app->m_Inst.m_Stat[ix].phy.is_switch_Y_Z) return bd1[map[ix].second].Extents.z;
+		return bd1[map[ix].second].Extents.y;
+	case PHY_BOUND_SPHERE:
+		return bd2[map[ix].second].Radius;
 	}
 	assert(false);
 	return 0.0f;
@@ -547,9 +557,13 @@ template <typename T_app>
 float phy_bound_mgr<T_app>::extents_z(const size_t &ix)
 {
 	switch(map[ix].first) {
-	case PHY_BOUND_BOX: return bd0[map[ix].second].Extents.z;
-	case PHY_BOUND_ORI_BOX: return bd1[map[ix].second].Extents.z;
-	case PHY_BOUND_SPHERE: return bd2[map[ix].second].Radius;
+	case PHY_BOUND_BOX:
+		return bd0[map[ix].second].Extents.z;
+	case PHY_BOUND_ORI_BOX:
+		if (app->m_Inst.m_Stat[ix].phy.is_switch_Y_Z) return bd1[map[ix].second].Extents.y;
+		return bd1[map[ix].second].Extents.z;
+	case PHY_BOUND_SPHERE:
+		return bd2[map[ix].second].Radius;
 	}
 	assert(false);
 	return 0.0f;

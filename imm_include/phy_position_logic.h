@@ -219,7 +219,7 @@ void phy_position<T_app>::impulse_casual(
 	//
 	if (relative_size > 1.0f && (!is_specified_AtoB)) {
 		XMFLOAT3 extents_A = *prop_A.p_aabb3;
-		XMFLOAT3 extents_B = *prop_A.p_aabb3;
+		XMFLOAT3 extents_B = *prop_B.p_aabb3;
 		if (prop_A.is_switch_Y_Z) {
 			extents_A.y = prop_A.p_aabb3->z;
 			extents_A.z = prop_A.p_aabb3->y;

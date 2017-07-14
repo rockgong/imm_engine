@@ -101,6 +101,9 @@ void ai_Patrol::execute(steering *ste)
 		ste->action_dt = 0.0f;
 		ste->random_t = math::calc_randf(10.0f, 20.0f);
 	}
+	if (PTR->m_Control.map_stop[ste->index].is_lag) {
+		ste->random_t = 0.0f;
+	}
 }
 //
 void ai_Patrol::exit(steering *ste)
@@ -218,7 +221,10 @@ void ai_Guard::enter(steering *ste)
 //
 void ai_Guard::execute(steering *ste)
 {
-	if (PTR->m_Inst.m_Troll[ste->index].current_state == pose_Atk::instance()) return;
+	if (PTR->m_Inst.m_Troll[ste->index].current_state == pose_Atk::instance()) {
+		ste->change_state(ai_Atk::instance());
+		return;
+	}
 	if (ste->count_down > 0.0f) {
 		ste->count_down -= AI_DELTA_TIME_PHY_SLOW;
 	}

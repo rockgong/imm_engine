@@ -27,25 +27,31 @@ struct control_stop
 	void interrupt(T_app *app, const size_t &index);
 	bool is_stop;
 	bool is_avoidance;
+	bool is_lag;
 	BoundingBox bbox;
 	XMFLOAT3 hit_pos;
 	XMFLOAT3 avoidance;
+	XMFLOAT3 lag_pos;
 	float flsuh_time;
 	float speed;
 	float avoid_time;
 	float last_time;
+	float lag_check;
 };
 //
 template <typename T_app>
 control_stop<T_app>::control_stop():
 	is_stop(true),
 	is_avoidance(false),
+	is_lag(false),
 	hit_pos(0.0f, 0.0f, 0.0f),
 	avoidance(0.0f, 0.0f, 0.0f),
+	lag_pos(0.0f, 0.0f, 0.0f),
 	flsuh_time(0.0f),
 	speed(0.0f),
 	avoid_time(0.0f),
-	last_time(0.0f)
+	last_time(0.0f),
+	lag_check(0.0f)
 {
 	;
 }
@@ -54,8 +60,11 @@ template <typename T_app>
 void control_stop<T_app>::set_destination(const float &speed_in, CXMVECTOR &pos, const float &half_y)
 {
 	is_stop = false;
+	is_lag = false;
 	speed = speed_in;
 	set_aabb(pos, half_y);
+	XMStoreFloat3(&lag_pos, pos);
+	lag_pos.y = 0.0f;
 }
 //
 template <typename T_app>
@@ -91,6 +100,7 @@ void control_stop<T_app>::update(T_app *app, const size_t &index, const float &d
 	else {
 		last_time += dt;
 		flsuh_time += dt;
+		lag_check -= dt;
 		if (!app->m_Inst.m_Stat[index].phy.is_on_land) return;
 		if (flsuh_time > AI_DELTA_TIME_PHY_SLOW) flsuh_time = 0.0f;
 		else return;
@@ -106,6 +116,23 @@ void control_stop<T_app>::update(T_app *app, const size_t &index, const float &d
 				math::mouse_move_toward_hit(hit, index, speed);
 			}
 		}
+	}
+	// if lag
+	if (lag_check < 0.0f && !is_stop) {
+		XMVECTOR xmnow_pos = XMLoadFloat3(&app->m_Inst.m_BoundW.center(index));
+		xmnow_pos = XMVectorSetY(xmnow_pos, 0.0f);
+		XMVECTOR xmlag_pos = XMLoadFloat3(&lag_pos);
+		XMVECTOR length = XMVectorSubtract(xmnow_pos, xmlag_pos);
+		length = XMVector3LengthEst(length);
+		//
+		float speed_factor = speed*0.2f;
+		if (speed_factor > 2.0f) speed_factor = 2.0f;
+		if (XMVectorGetX(length) < speed_factor) {
+			is_lag = true;
+		}
+		lag_pos = app->m_Inst.m_BoundW.center(index);
+		lag_pos.y = 0.0f;
+		lag_check = 3.0f;
 	}
 }
 //
